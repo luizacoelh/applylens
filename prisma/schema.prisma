@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum JobStatus {
+  APLICADA
+  ENTREVISTA
+  REPROVADA
+  OFERTA
+}
+
+model Job {
+  id           String    @id @default(cuid())
+  company      String
+  title        String
+  description  String
+  status       JobStatus @default(APLICADA)
+
+  summary      String?
+  requirements String?   // JSON stringificado (array) — decisão temporária do MVP, ver README
+  technologies String?   // JSON stringificado (array)
+  questions    String?   // JSON stringificado (array)
+  checklist    String?   // JSON stringificado (array de { text, done })
+
+  createdAt    DateTime  @default(now())
+}
