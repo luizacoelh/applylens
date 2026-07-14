@@ -38,7 +38,7 @@ ${jobText}
 `;
 
 export async function analyzeJobWithGemini(jobText: string): Promise<JobAnalysis> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
 
   const result = await model.generateContent(PROMPT_TEMPLATE(jobText));
   const rawText = result.response.text();

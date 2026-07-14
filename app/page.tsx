@@ -1,65 +1,91 @@
-import Image from "next/image";
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { mapJob } from "@/lib/jobMapper";
+import { STATUS_LABELS, STATUS_STYLES } from "@/lib/jobStatus";
 
-export default function Home() {
+
+
+export default async function DashboardPage() {
+  const jobs = await prisma.job.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
+  const jobList = jobs.map(mapJob);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-39.5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="min-h-screen bg-[#111218] text-[#E4E6EB] px-4 py-16">
+      <div className="mx-auto max-w-3xl">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <p className="font-mono text-sm text-[#378ADD] mb-1">$ applylens --dashboard</p>
+            <h1 className="text-2xl font-semibold">Suas candidaturas</h1>
+          </div>
+          <Link
+            href="/nova-vaga"
+            className="rounded-md bg-[#378ADD] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#4FA0F0]"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/8 px-5 transition-colors hover:border-transparent hover:bg-black/4 dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-39.5"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            + Nova vaga
+          </Link>
         </div>
-      </main>
+
+        {jobList.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="space-y-3">
+            {jobList.map((job) => (
+              <Link
+                key={job.id}
+                href={`/vaga/${job.id}`}
+                className="block rounded-lg border border-[#2A2D3A] bg-[#1A1B23] p-5 transition-colors hover:border-[#378ADD]/50"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-mono text-[#7C8494] uppercase tracking-wide">
+                      {job.company}
+                    </p>
+                    <h2 className="mt-1 text-lg font-medium">{job.title}</h2>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-full border px-3 py-1 font-mono text-xs ${STATUS_STYLES[job.status]}`}
+                  >
+                    {STATUS_LABELS[job.status]}
+                  </span>
+                </div>
+
+                {job.summary && (
+                  <p className="mt-2 line-clamp-2 text-sm text-[#C4C7D0]">{job.summary}</p>
+                )}
+
+                <p className="mt-3 text-xs text-[#7C8494]">
+                  Adicionada em{" "}
+                  {new Intl.DateTimeFormat("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  }).format(job.createdAt)}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="rounded-lg border border-dashed border-[#2A2D3A] p-12 text-center">
+      <p className="text-[#C4C7D0]">Nenhuma vaga adicionada ainda.</p>
+      <p className="mt-1 text-sm text-[#7C8494]">
+        Cole a descrição de uma vaga para começar a organizar suas candidaturas.
+      </p>
+      <Link
+        href="/nova-vaga"
+        className="mt-4 inline-block rounded-md bg-[#378ADD] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#4FA0F0]"
+      >
+        + Nova vaga
+      </Link>
     </div>
   );
 }

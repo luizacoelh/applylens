@@ -5,9 +5,10 @@ import { JobStatus } from "@prisma/client";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const job = await prisma.job.findUnique({ where: { id: params.id } });
+  const { id } = await params;
+  const job = await prisma.job.findUnique({ where: { id } });
 
   if (!job) {
     return NextResponse.json({ error: "Vaga não encontrada." }, { status: 404 });
@@ -18,17 +19,18 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const body: { status: JobStatus } = await req.json();
   const { status } = body;
 
-  if (typeof status !== "string" || !Object.values(JobStatus).includes(status as JobStatus)) {
+  if (typeof status !== "string" || !Object.values(JobStatus).includes(status)) {
     return NextResponse.json({ error: "Status inválido." }, { status: 400 });
   }
 
   const job = await prisma.job.update({
-    where: { id: params.id },
+    where: { id },
     data: { status },
   });
 

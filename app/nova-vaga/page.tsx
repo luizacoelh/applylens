@@ -14,6 +14,7 @@ export default function NovaVagaPage() {
   const [analysis, setAnalysis] = useState<JobAnalysis | null>(null);
   const [company, setCompany] = useState("");
   const [title, setTitle] = useState("");
+  const [summary, setSummary] = useState("");
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -45,6 +46,7 @@ export default function NovaVagaPage() {
       setAnalysis(data as JobAnalysis);
       setCompany(data.company);
       setTitle(data.title);
+      setSummary(data.summary);
       setStep("preview");
     } catch {
       setError("Falha de conexão. Tente novamente.");
@@ -66,7 +68,7 @@ export default function NovaVagaPage() {
           description,
           company,
           title,
-          summary: analysis.summary,
+          summary,
           requirements: analysis.requirements,
           technologies: analysis.technologies,
           questions: analysis.questions,
@@ -92,6 +94,9 @@ export default function NovaVagaPage() {
   function handleBack() {
     setStep("input");
     setAnalysis(null);
+     setCompany("");
+     setTitle("");
+    setSummary("");
     setError(null);
   }
 
@@ -160,11 +165,20 @@ export default function NovaVagaPage() {
                   onChange={(e) => setTitle(e.target.value)}
                   className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
                 />
-              </div># campos abaixo são somente leitura — vieram da IA
+              </div>
 
-              <PreviewSection label="Resumo">
-                <p className="text-sm text-[#C4C7D0] leading-relaxed">{analysis.summary}</p>
-              </PreviewSection>
+              <div>
+                <label htmlFor="summary" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
+                  Resumo
+                </label>
+                <textarea
+                  id="summary"
+                  value={summary}
+                  onChange={(e) => setSummary(e.target.value)}
+                  rows={4}
+                  className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-4 py-2 text-sm text-[#C4C7D0] leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#378ADD] resize-none"
+                />
+              </div>
 
               <PreviewSection label="Tecnologias">
                 <div className="flex flex-wrap gap-2">
@@ -243,4 +257,4 @@ function PreviewSection({ label, children }: { label: string; children: React.Re
       {children}
     </div>
   );
-}   
+}
