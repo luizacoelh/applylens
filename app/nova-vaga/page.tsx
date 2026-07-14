@@ -104,7 +104,7 @@ export default function NovaVagaPage() {
     <main className="min-h-screen bg-[#111218] text-[#E4E6EB] flex justify-center px-4 py-16">
       <div className="w-full max-w-2xl">
         <p className="font-mono text-sm text-[#378ADD] mb-2">
-          $ nova-vaga --step {step === "input" ? "1" : "2"}/2
+           Nova-Vaga Etapa {step === "input" ? "1" : "2"}/2
         </p>
         <h1 className="text-2xl font-semibold mb-8">
           {step === "input" ? "Adicionar vaga" : "Confirmar análise"}

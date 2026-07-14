@@ -17,7 +17,7 @@ export default async function DashboardPage() {
       <div className="mx-auto max-w-3xl">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <p className="font-mono text-sm text-[#378ADD] mb-1">$ applylens --dashboard</p>
+            <p className="font-mono text-sm text-[#378ADD] mb-1">ApplyLens Dashboard</p>
             <h1 className="text-2xl font-semibold">Suas candidaturas</h1>
           </div>
           <Link
