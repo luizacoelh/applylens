@@ -3,6 +3,13 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { mapJob } from "@/lib/jobMapper";
 import StatusSelect from "@/components/StatusSelect";
+import JobMetaEditor from "@/components/JobMetaEditor";
+import DetailSection from "@/components/DetailSection";
+import TechBadge from "@/components/TechBadge";
+import ChecklistItem from "@/components/ChecklistItem";
+import SkillCompatibility from "@/components/SkillCompatibility";
+import DeleteJobButton from "@/components/DeleteJobButton";
+import { LOCATION_LABELS } from "@/lib/jobLocation";
 
 export default async function VagaDetalhesPage({
   params,
@@ -22,9 +29,12 @@ export default async function VagaDetalhesPage({
   return (
     <main className="min-h-screen bg-[#111218] text-[#E4E6EB] px-4 py-16">
       <div className="mx-auto max-w-2xl">
-        <Link href="/" className="font-mono text-sm text-[#378ADD] hover:text-[#4FA0F0]">
-          ← Dashboard
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/" className="font-mono text-sm text-[#378ADD] hover:text-[#4FA0F0]">
+            ← Dashboard
+          </Link>
+          <DeleteJobButton jobId={job.id} />
+        </div>
 
         {created === "true" && (
           <div className="mt-4 rounded-md border border-[#3FB950]/40 bg-[#3FB950]/10 px-4 py-3 text-sm text-[#3FB950]">
@@ -33,37 +43,52 @@ export default async function VagaDetalhesPage({
         )}
 
         <div className="mt-6 flex items-start justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <p className="font-mono text-sm text-[#7C8494] uppercase tracking-wide">{job.company}</p>
             <h1 className="mt-1 text-2xl font-semibold">{job.title}</h1>
+            {job.url && (
+              <a
+                href={job.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 inline-block text-xs text-[#378ADD] hover:text-[#4FA0F0] break-all"
+              >
+                {job.url} ↗
+              </a>
+            )}
+            <p className="mt-2 text-xs text-[#7C8494]">
+              {LOCATION_LABELS[job.location]}
+              {job.salary && ` · ${job.salary}`}
+            </p>
           </div>
           <StatusSelect jobId={job.id} initialStatus={job.status} />
         </div>
 
         <div className="mt-8 space-y-6">
           {job.summary && (
-            <Section label="Resumo">
+            <DetailSection label="Resumo">
               <p className="text-sm text-[#C4C7D0] leading-relaxed">{job.summary}</p>
-            </Section>
+            </DetailSection>
           )}
 
           {job.technologies.length > 0 && (
-            <Section label="Tecnologias">
+            <DetailSection label="Tecnologias">
               <div className="flex flex-wrap gap-2">
                 {job.technologies.map((tech) => (
-                  <span
-                    key={tech}
-                    className="rounded-full border border-[#378ADD]/40 bg-[#378ADD]/10 px-3 py-1 font-mono text-xs text-[#378ADD]"
-                  >
-                    {tech}
-                  </span>
+                  <TechBadge key={tech} tech={tech} />
                 ))}
               </div>
-            </Section>
+            </DetailSection>
+          )}
+
+          {job.technologies.length > 0 && (
+            <DetailSection label="Compatibilidade com suas skills">
+              <SkillCompatibility technologies={job.technologies} />
+            </DetailSection>
           )}
 
           {job.requirements.length > 0 && (
-            <Section label="Requisitos">
+            <DetailSection label="Requisitos">
               <ul className="space-y-1 text-sm text-[#C4C7D0]">
                 {job.requirements.map((req, i) => (
                   <li key={i} className="flex gap-2">
@@ -72,11 +97,11 @@ export default async function VagaDetalhesPage({
                   </li>
                 ))}
               </ul>
-            </Section>
+            </DetailSection>
           )}
 
           {job.questions.length > 0 && (
-            <Section label="Perguntas prováveis">
+            <DetailSection label="Perguntas prováveis">
               <ul className="space-y-1 text-sm text-[#C4C7D0]">
                 {job.questions.map((q, i) => (
                   <li key={i} className="flex gap-2">
@@ -85,32 +110,30 @@ export default async function VagaDetalhesPage({
                   </li>
                 ))}
               </ul>
-            </Section>
+            </DetailSection>
           )}
 
           {job.checklist.length > 0 && (
-            <Section label="Checklist">
-              <ul className="space-y-1 text-sm text-[#C4C7D0]">
+            <DetailSection label="Checklist">
+              <ul className="space-y-1">
                 {job.checklist.map((item, i) => (
-                  <li key={i} className="flex gap-2">
-                    <span className="text-[#378ADD]">□</span>
-                    {item}
-                  </li>
+                  <ChecklistItem key={i} text={item} />
                 ))}
               </ul>
-            </Section>
+            </DetailSection>
           )}
+
+          <DetailSection label="Detalhes da candidatura">
+            <JobMetaEditor
+              jobId={job.id}
+              initialUrl={job.url}
+              initialLocation={job.location}
+              initialSalary={job.salary}
+              initialAppliedAt={job.appliedAt}
+            />
+          </DetailSection>
         </div>
       </div>
     </main>
-  );
-}
-
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="border-t border-[#2A2D3A] pt-4">
-      <p className="font-mono text-xs text-[#7C8494] uppercase tracking-wide mb-2">{label}</p>
-      {children}
-    </div>
   );
 }

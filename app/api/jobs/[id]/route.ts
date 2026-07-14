@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { mapJob } from "@/lib/jobMapper";
-import { JobStatus } from "@prisma/client";
+import { JobStatus, JobLocation, Prisma } from "@prisma/client";
+import { UpdateJobRequest } from "@/types/job";
+
+function isValidUrl(value: string): boolean {
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export async function GET(
   _req: NextRequest,
@@ -17,22 +27,78 @@ export async function GET(
   return NextResponse.json(mapJob(job));
 }
 
+// PATCH aceita atualização parcial: status, url, location, salary, appliedAt.
+// Só os campos enviados no body são alterados — os demais permanecem como estão.
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const body: { status: JobStatus } = await req.json();
-  const { status } = body;
+  const body: UpdateJobRequest = await req.json();
+  const { status, url, location, salary, appliedAt } = body;
 
-  if (typeof status !== "string" || !Object.values(JobStatus).includes(status)) {
-    return NextResponse.json({ error: "Status inválido." }, { status: 400 });
+  const data: Prisma.JobUpdateInput = {};
+
+  if (status !== undefined) {
+    if (typeof status !== "string" || !Object.values(JobStatus).includes(status)) {
+      return NextResponse.json({ error: "Status inválido." }, { status: 400 });
+    }
+    data.status = status;
   }
 
-  const job = await prisma.job.update({
-    where: { id },
-    data: { status },
-  });
+  if (url !== undefined) {
+    if (url.trim() !== "" && !isValidUrl(url)) {
+      return NextResponse.json(
+        { error: "URL da vaga inválida. Use um link completo (https://...)." },
+        { status: 400 }
+      );
+    }
+    data.url = url.trim() === "" ? null : url.trim();
+  }
 
-  return NextResponse.json(mapJob(job));
+  if (location !== undefined) {
+    if (!Object.values(JobLocation).includes(location)) {
+      return NextResponse.json({ error: "Modalidade de local inválida." }, { status: 400 });
+    }
+    data.location = location;
+  }
+
+  if (salary !== undefined) {
+    data.salary = salary.trim() === "" ? null : salary.trim();
+  }
+
+  if (appliedAt !== undefined) {
+    const d = new Date(appliedAt);
+    if (isNaN(d.getTime())) {
+      return NextResponse.json({ error: "Data de candidatura inválida." }, { status: 400 });
+    }
+    data.appliedAt = d;
+  }
+
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ error: "Nenhum campo válido para atualizar." }, { status: 400 });
+  }
+
+  try {
+    const job = await prisma.job.update({ where: { id }, data });
+    return NextResponse.json(mapJob(job));
+  } catch (error) {
+    console.error("Erro ao atualizar vaga:", error);
+    return NextResponse.json({ error: "Não foi possível atualizar a vaga." }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  try {
+    await prisma.job.delete({ where: { id } });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Erro ao excluir vaga:", error);
+    return NextResponse.json({ error: "Não foi possível excluir a vaga." }, { status: 500 });
+  }
 }

@@ -2,9 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { JobAnalysis } from "@/types/job";
+import { JobAnalysis, JobLocation } from "@/types/job";
+import { LOCATION_LABELS } from "@/lib/jobLocation";
+import DetailSection from "@/components/DetailSection";
+import TechBadge from "@/components/TechBadge";
+import ChecklistItem from "@/components/ChecklistItem";
 
 type Step = "input" | "preview";
+
+function todayInputValue(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export default function NovaVagaPage() {
   const router = useRouter();
@@ -12,9 +20,14 @@ export default function NovaVagaPage() {
   const [step, setStep] = useState<Step>("input");
   const [description, setDescription] = useState("");
   const [analysis, setAnalysis] = useState<JobAnalysis | null>(null);
+
   const [company, setCompany] = useState("");
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
+  const [url, setUrl] = useState("");
+  const [location, setLocation] = useState<JobLocation>("NAO_INFORMADO");
+  const [salary, setSalary] = useState("");
+  const [appliedAt, setAppliedAt] = useState(todayInputValue());
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -73,6 +86,10 @@ export default function NovaVagaPage() {
           technologies: analysis.technologies,
           questions: analysis.questions,
           checklist: analysis.checklist,
+          url: url.trim() === "" ? undefined : url.trim(),
+          location,
+          salary: salary.trim() === "" ? undefined : salary.trim(),
+          appliedAt,
         }),
       });
 
@@ -83,7 +100,7 @@ export default function NovaVagaPage() {
         return;
       }
 
-      router.push(`/vaga/${data.id}`);
+      router.push(`/vaga/${data.id}?created=true`);
     } catch {
       setError("Falha de conexão. Tente novamente.");
     } finally {
@@ -94,9 +111,13 @@ export default function NovaVagaPage() {
   function handleBack() {
     setStep("input");
     setAnalysis(null);
-     setCompany("");
-     setTitle("");
+    setCompany("");
+    setTitle("");
     setSummary("");
+    setUrl("");
+    setLocation("NAO_INFORMADO");
+    setSalary("");
+    setAppliedAt(todayInputValue());
     setError(null);
   }
 
@@ -104,7 +125,7 @@ export default function NovaVagaPage() {
     <main className="min-h-screen bg-[#111218] text-[#E4E6EB] flex justify-center px-4 py-16">
       <div className="w-full max-w-2xl">
         <p className="font-mono text-sm text-[#378ADD] mb-2">
-           Nova-Vaga Etapa {step === "input" ? "1" : "2"}/2
+          Nova vaga · Etapa {step === "input" ? "1" : "2"}/2
         </p>
         <h1 className="text-2xl font-semibold mb-8">
           {step === "input" ? "Adicionar vaga" : "Confirmar análise"}
@@ -180,20 +201,74 @@ export default function NovaVagaPage() {
                 />
               </div>
 
-              <PreviewSection label="Tecnologias">
+              <div>
+                <label htmlFor="url" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
+                  Link da vaga (opcional)
+                </label>
+                <input
+                  id="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <label htmlFor="location" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
+                    Local
+                  </label>
+                  <select
+                    id="location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value as JobLocation)}
+                    className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+                  >
+                    {Object.entries(LOCATION_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="salary" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
+                    Salário
+                  </label>
+                  <input
+                    id="salary"
+                    value={salary}
+                    onChange={(e) => setSalary(e.target.value)}
+                    placeholder="Não informado"
+                    className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="appliedAt" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
+                    Data da candidatura
+                  </label>
+                  <input
+                    id="appliedAt"
+                    type="date"
+                    value={appliedAt}
+                    onChange={(e) => setAppliedAt(e.target.value)}
+                    className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+                  />
+                </div>
+              </div>
+
+              <DetailSection label="Tecnologias">
                 <div className="flex flex-wrap gap-2">
                   {analysis.technologies.map((tech) => (
-                    <span
-                      key={tech}
-                      className="rounded-full border border-[#378ADD]/40 bg-[#378ADD]/10 px-3 py-1 font-mono text-xs text-[#378ADD]"
-                    >
-                      {tech}
-                    </span>
+                    <TechBadge key={tech} tech={tech} />
                   ))}
                 </div>
-              </PreviewSection>
+              </DetailSection>
 
-              <PreviewSection label="Requisitos">
+              <DetailSection label="Requisitos">
                 <ul className="space-y-1 text-sm text-[#C4C7D0]">
                   {analysis.requirements.map((req, i) => (
                     <li key={i} className="flex gap-2">
@@ -202,9 +277,9 @@ export default function NovaVagaPage() {
                     </li>
                   ))}
                 </ul>
-              </PreviewSection>
+              </DetailSection>
 
-              <PreviewSection label="Perguntas prováveis">
+              <DetailSection label="Perguntas prováveis">
                 <ul className="space-y-1 text-sm text-[#C4C7D0]">
                   {analysis.questions.map((q, i) => (
                     <li key={i} className="flex gap-2">
@@ -213,18 +288,15 @@ export default function NovaVagaPage() {
                     </li>
                   ))}
                 </ul>
-              </PreviewSection>
+              </DetailSection>
 
-              <PreviewSection label="Checklist">
-                <ul className="space-y-1 text-sm text-[#C4C7D0]">
+              <DetailSection label="Checklist">
+                <ul className="space-y-1">
                   {analysis.checklist.map((item, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="text-[#378ADD]">□</span>
-                      {item}
-                    </li>
+                    <ChecklistItem key={i} text={item} />
                   ))}
                 </ul>
-              </PreviewSection>
+              </DetailSection>
             </div>
 
             <div className="flex gap-3">
@@ -247,14 +319,5 @@ export default function NovaVagaPage() {
         )}
       </div>
     </main>
-  );
-}
-
-function PreviewSection({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="border-t border-[#2A2D3A] pt-4">
-      <p className="font-mono text-xs text-[#7C8494] uppercase tracking-wide mb-2">{label}</p>
-      {children}
-    </div>
   );
 }

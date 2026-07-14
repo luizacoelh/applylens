@@ -1,6 +1,5 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -14,18 +13,30 @@ enum JobStatus {
   OFERTA
 }
 
+enum JobLocation {
+  REMOTO
+  HIBRIDO
+  PRESENCIAL
+  NAO_INFORMADO
+}
+
 model Job {
-  id           String    @id @default(cuid())
+  id           String      @id @default(cuid())
   company      String
   title        String
   description  String
-  status       JobStatus @default(APLICADA)
+  status       JobStatus   @default(APLICADA)
+
+  url          String?     // link original da vaga, se houver
+  location     JobLocation @default(NAO_INFORMADO)
+  salary       String?     // texto livre — ex: "R$ 2.000" ou "Não informado"
+  appliedAt    DateTime    @default(now()) // data em que a candidatura foi feita (editável, separada de createdAt)
 
   summary      String?
-  requirements String?   // JSON stringificado (array) — decisão temporária do MVP, ver README
-  technologies String?   // JSON stringificado (array)
-  questions    String?   // JSON stringificado (array)
-  checklist    String?   // JSON stringificado (array de { text, done })
+  requirements String?     // JSON stringificado (array) — decisão temporária do MVP, ver README
+  technologies String?     // JSON stringificado (array)
+  questions    String?     // JSON stringificado (array)
+  checklist    String?     // JSON stringificado (array de { text, done })
 
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime    @default(now())
 }
