@@ -172,10 +172,10 @@ suficiente no seu plano.
 
 ### Checklist antes de ativar o deploy
 
-- [x] Banco criado no Turso e migrations aplicadas (passos 1–2)
-- [x] Projeto importado na Vercel (passo 3)
-- [x] Variáveis de ambiente configuradas na Vercel (passo 4)
-- [x] `.env` local nunca commitado (já garantido pelo `.gitignore`)
+- [ ] Banco criado no Turso e migrations aplicadas (passos 1–2)
+- [ ] Projeto importado na Vercel (passo 3)
+- [ ] Variáveis de ambiente configuradas na Vercel (passo 4)
+- [ ] `.env` local nunca commitado (já garantido pelo `.gitignore`)
 
 ---
 
