@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { mapJob } from "@/lib/jobMapper";
-import DashboardClient from "@/components/DashboardClient";
+import DashboardClient from "@/components/dashboard/DashboardClient";
 
 export default async function DashboardPage() {
   const jobs = await prisma.job.findMany({

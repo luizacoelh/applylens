@@ -4,6 +4,9 @@ import { stringifyArray } from "@/lib/json";
 import { mapJob } from "@/lib/jobMapper";
 import { analyzeJobWithGemini } from "@/lib/gemini";
 
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 // Endpoint preparado para uma futura automação via n8n (ex: um workflow que
 // monitora e-mails ou um feed de vagas e dispara isso automaticamente).
 // Está DESATIVADO por padrão: só funciona se N8N_WEBHOOK_SECRET estiver

@@ -2,13 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { mapJob } from "@/lib/jobMapper";
-import StatusSelect from "@/components/StatusSelect";
-import JobMetaEditor from "@/components/JobMetaEditor";
-import DetailSection from "@/components/DetailSection";
-import TechBadge from "@/components/TechBadge";
-import ChecklistItem from "@/components/ChecklistItem";
-import SkillCompatibility from "@/components/SkillCompatibility";
-import DeleteJobButton from "@/components/DeleteJobButton";
+import StatusSelect from "@/components/job/StatusSelect";
+import JobMetaEditor from "@/components/job/JobMetaEditor";
+import DetailSection from "@/components/ui/DetailSection";
+import TechBadge from "@/components/ui/TechBadge";
+import ChecklistItem from "@/components/job/ChecklistItem";
+import SkillCompatibility from "@/components/job/SkillCompatibility";
+import DeleteJobButton from "@/components/job/DeleteJobButton";
 import { LOCATION_LABELS } from "@/lib/jobLocation";
 
 export default async function VagaDetalhesPage({

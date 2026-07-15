@@ -5,6 +5,8 @@ import { mapJob } from "@/lib/jobMapper";
 import { CreateJobRequest } from "@/types/job";
 import { JobLocation } from "@prisma/client";
 
+export const runtime = "nodejs";
+
 function isValidUrl(value: string): boolean {
   try {
     new URL(value);
