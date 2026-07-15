@@ -1,19 +1,32 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { JobAnalysis } from "@/types/job";
 
-const apiKey = process.env.GEMINI_API_KEY;
-
-if (!apiKey) {
-  throw new Error("GEMINI_API_KEY não encontrada.");
-}
-
-const genAI = new GoogleGenerativeAI(apiKey);
-
 // Modelo atual com tier gratuito confirmado (jul/2026). É um modelo "preview",
 // então o Google pode trocar o nome dele com pouco aviso — se um dia o
 // /api/analyze voltar a quebrar com erro 404 "no longer available", é isso:
 // procure o nome do modelo atual em https://ai.google.dev/gemini-api/docs/models
 const GEMINI_MODEL = "gemini-3-flash-preview";
+
+// Inicialização preguiçosa (só na primeira chamada, não no carregamento do
+// módulo): assim, se GEMINI_API_KEY estiver ausente em produção, só o
+// /api/analyze falha — o resto da aplicação (Dashboard, detalhes, etc.)
+// continua funcionando normalmente em vez da função serverless inteira
+// falhar ao inicializar.
+let cachedClient: GoogleGenerativeAI | null = null;
+
+function getClient(): GoogleGenerativeAI {
+  if (cachedClient) return cachedClient;
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "GEMINI_API_KEY não configurada. Defina essa variável de ambiente para usar a análise por IA."
+    );
+  }
+
+  cachedClient = new GoogleGenerativeAI(apiKey);
+  return cachedClient;
+}
 
 const PROMPT_TEMPLATE = (jobText: string) => `
 Você é um assistente de análise de vagas de emprego. Analise a vaga abaixo e
@@ -68,7 +81,7 @@ function toFriendlyError(error: unknown): Error {
 }
 
 export async function analyzeJobWithGemini(jobText: string): Promise<JobAnalysis> {
-  const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+  const model = getClient().getGenerativeModel({ model: GEMINI_MODEL });
 
   let rawText: string;
   try {

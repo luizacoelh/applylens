@@ -14,7 +14,9 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@libsql/client": "^0.15.15",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/adapter-libsql": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "better-sqlite3": "^12.11.1",
     "next": "16.2.10",

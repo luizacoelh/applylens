@@ -1,0 +1,53 @@
+import Link from "next/link";
+import { Job } from "@/types/job";
+import StatusBadge from "@/components/ui/StatusBadge";
+import { LOCATION_LABELS } from "@/lib/jobLocation";
+
+export default function JobTable({ jobs }: { jobs: Job[] }) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-[#2A2D3A]">
+      <table className="w-full min-w-[720px] border-collapse text-sm">
+        <thead>
+          <tr className="border-b border-[#2A2D3A] bg-[#1A1B23] text-left font-mono text-xs uppercase tracking-wide text-[#7C8494]">
+            <th className="px-4 py-3 font-medium">Empresa</th>
+            <th className="px-4 py-3 font-medium">Cargo</th>
+            <th className="px-4 py-3 font-medium">Status</th>
+            <th className="px-4 py-3 font-medium">Tecnologias</th>
+            <th className="px-4 py-3 font-medium">Local</th>
+            <th className="px-4 py-3 font-medium">Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          {jobs.map((job) => (
+            <tr
+              key={job.id}
+              className="border-b border-[#2A2D3A] last:border-0 hover:bg-[#1A1B23]"
+            >
+              <td className="px-4 py-3">
+                <Link href={`/vaga/${job.id}`} className="block text-[#E4E6EB] hover:text-[#378ADD]">
+                  {job.company}
+                </Link>
+              </td>
+              <td className="px-4 py-3 text-[#C4C7D0]">{job.title}</td>
+              <td className="px-4 py-3">
+                <StatusBadge status={job.status} />
+              </td>
+              <td className="px-4 py-3 text-[#7C8494]">
+                {job.technologies.slice(0, 3).join(", ")}
+                {job.technologies.length > 3 ? ` +${job.technologies.length - 3}` : ""}
+              </td>
+              <td className="px-4 py-3 text-[#7C8494]">{LOCATION_LABELS[job.location]}</td>
+              <td className="px-4 py-3 text-[#7C8494]">
+                {new Intl.DateTimeFormat("pt-BR", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                }).format(job.appliedAt)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}

@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { JobAnalysis, JobLocation } from "@/types/job";
 import { LOCATION_LABELS } from "@/lib/jobLocation";
-import DetailSection from "@/components/DetailSection";
-import TechBadge from "@/components/TechBadge";
-import ChecklistItem from "@/components/ChecklistItem";
+import DetailSection from "@/components/ui/DetailSection";
+import TechBadge from "@/components/ui/TechBadge";
+import ChecklistItem from "@/components/job/ChecklistItem";
 
 type Step = "input" | "preview";
 
