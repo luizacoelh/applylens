@@ -10,11 +10,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "migrate:turso": "node scripts/apply-turso-migrations.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@libsql/client": "^0.15.15",
+    "@libsql/client": "0.8.1",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@prisma/adapter-libsql": "^7.8.0",
     "@prisma/client": "^7.8.0",

@@ -106,46 +106,33 @@ ser um SQLite **hospedado**: o Turso.
 
 ### Passo a passo
 
-**1. Criar a conta e o banco no Turso** (grátis, ação manual — feita fora deste repositório)
+**1. Criar o banco no Turso** (grátis, ação manual — você já fez isso pelo
+[site do Turso](https://app.turso.tech), o que é totalmente válido; a CLI
+oficial deles não é necessária. Guarde a URL de conexão e o token gerados lá
+— são os valores de `TURSO_DATABASE_URL` e `TURSO_AUTH_TOKEN` no seu `.env`.)
 
-```bash
-# instalar a CLI do Turso (uma vez)
-curl -sSfL https://get.tur.so/install.sh | bash
-
-# login
-turso auth login
-
-# criar o banco
-turso db create applylens
-
-# pegar a URL de conexão
-turso db show applylens --url
-
-# gerar um token de autenticação
-turso db tokens create applylens
-```
-
-Guarde a URL (algo como `libsql://applylens-seuuser.turso.io`) e o token — são
-os valores de `TURSO_DATABASE_URL` e `TURSO_AUTH_TOKEN`.
+> Nota: a CLI oficial do Turso (`turso db shell`) **exige WSL no Windows**
+> (é uma limitação documentada da própria Turso, não deste projeto). Por isso
+> o passo abaixo usa um script Node em vez da CLI — evita esse problema de
+> vez, e usa o mesmo `@libsql/client` que a aplicação já depende.
 
 **2. Aplicar as migrations no banco do Turso**
 
 O `prisma migrate dev` não funciona diretamente contra o Turso (limitação
 conhecida do Prisma com libSQL remoto — as migrations continuam sendo geradas
 localmente, contra o SQLite local, como você já faz). Para aplicar o schema
-atual no banco do Turso, rode cada arquivo de migration existente em
-`prisma/migrations/*/migration.sql`, em ordem, direto pela CLI do Turso:
+atual no banco do Turso, com `TURSO_DATABASE_URL` e `TURSO_AUTH_TOKEN` já
+preenchidas no seu `.env`, rode:
 
 ```bash
-turso db shell applylens < prisma/migrations/20260713194835_init/migration.sql
-turso db shell applylens < prisma/migrations/20260713214601_init/migration.sql
-turso db shell applylens < prisma/migrations/20260713220208_add_status_enum/migration.sql
-turso db shell applylens < prisma/migrations/20260714221547_add_job_metadata/migration.sql
+npm run migrate:turso
 ```
 
-(a lista exata de pastas pode mudar — rode `ls prisma/migrations` para
-conferir a ordem atual antes de aplicar. É a mesma ordem cronológica dos nomes
-das pastas.)
+Isso executa `scripts/apply-turso-migrations.mjs`, que lê cada
+`prisma/migrations/*/migration.sql` em ordem cronológica e aplica statement
+por statement direto no banco do Turso, usando `@libsql/client`. É seguro
+rodar mais de uma vez — statements que já foram aplicados antes (coluna/tabela
+já existente) são detectados e pulados automaticamente.
 
 **3. Criar o projeto na Vercel** (ação manual, feita no painel da Vercel)
 
@@ -185,10 +172,10 @@ suficiente no seu plano.
 
 ### Checklist antes de ativar o deploy
 
-- [ ] Banco criado no Turso e migrations aplicadas (passos 1–2)
-- [ ] Projeto importado na Vercel (passo 3)
-- [ ] Variáveis de ambiente configuradas na Vercel (passo 4)
-- [ ] `.env` local nunca commitado (já garantido pelo `.gitignore`)
+- [x] Banco criado no Turso e migrations aplicadas (passos 1–2)
+- [x] Projeto importado na Vercel (passo 3)
+- [x] Variáveis de ambiente configuradas na Vercel (passo 4)
+- [x] `.env` local nunca commitado (já garantido pelo `.gitignore`)
 
 ---
 
