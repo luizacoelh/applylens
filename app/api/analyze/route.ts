@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeJobWithGemini } from "@/lib/gemini";
+import { requireUser } from "@/lib/apiAuth";
+import { checkAndConsumeGeminiQuota } from "@/lib/rateLimit";
 
 // A chamada ao Gemini já levou entre 16s e 27s em teste (com retry de rate
 // limit). O padrão da Vercel para funções serverless costuma ser bem menor
@@ -10,6 +12,19 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
+  const { user, response } = await requireUser();
+  if (!user) return response;
+
+  const quota = await checkAndConsumeGeminiQuota(user.id);
+  if (!quota.allowed) {
+    return NextResponse.json(
+      {
+        error: `Limite diário de análises por IA atingido (${quota.limit}/dia). Tente novamente amanhã.`,
+      },
+      { status: 429 }
+    );
+  }
+
   try {
     const { description } = await req.json();
 

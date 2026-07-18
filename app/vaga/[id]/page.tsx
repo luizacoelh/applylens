@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { mapJob } from "@/lib/jobMapper";
 import StatusSelect from "@/components/job/StatusSelect";
@@ -18,11 +19,18 @@ export default async function VagaDetalhesPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ created?: string }>;
 }) {
+  const session = await auth();
+  if (!session?.user) {
+    redirect("/login");
+  }
+
   const { id } = await params;
   const { created } = await searchParams;
 
   const rawJob = await prisma.job.findUnique({ where: { id } });
-  if (!rawJob) notFound();
+  // 404 tanto se a vaga não existe quanto se pertence a outro usuário — não
+  // revelamos a existência de vagas de terceiros.
+  if (!rawJob || rawJob.userId !== session.user.id) notFound();
 
   const job = mapJob(rawJob);
 

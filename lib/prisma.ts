@@ -9,16 +9,18 @@ import { PrismaLibSql } from "@prisma/adapter-libsql";
 //   necessário porque o filesystem de funções serverless é efêmero e não guarda
 //   um arquivo .db entre requisições; ver README, seção "Deploy")
 //
-// A escolha é automática: se TURSO_DATABASE_URL estiver definida no ambiente,
-// usamos o adapter do Turso; caso contrário, caímos no SQLite local. Os dois
-// pacotes ficam marcados em next.config.ts (serverExternalPackages) para não
-// serem empacotados pelo bundler — o Node.js resolve o binário nativo
-// diretamente em runtime, o que evita problemas comuns de build serverless.
+// Em desenvolvimento sempre usamos o SQLite local. Isso evita que credenciais
+// de produção mantidas no `.env` façam o `next dev` consultar um Turso ainda
+// sem migrations e quebrem o login. Em produção, TURSO_DATABASE_URL seleciona
+// o banco hospedado normalmente. Os dois pacotes ficam marcados em
+// next.config.ts (serverExternalPackages) para não serem empacotados pelo
+// bundler — o Node.js resolve o binário nativo diretamente em runtime, o que
+// evita problemas comuns de build serverless.
 function createPrismaClient(): PrismaClient {
   const tursoUrl = process.env.TURSO_DATABASE_URL;
   const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
-  if (tursoUrl) {
+  if (process.env.NODE_ENV === "production" && tursoUrl) {
     if (!tursoToken) {
       throw new Error(
         "TURSO_DATABASE_URL está definida mas TURSO_AUTH_TOKEN não. Ambas são necessárias para conectar ao Turso."

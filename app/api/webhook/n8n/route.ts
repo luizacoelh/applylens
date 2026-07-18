@@ -12,18 +12,26 @@ export const maxDuration = 60;
 // Está DESATIVADO por padrão: só funciona se N8N_WEBHOOK_SECRET estiver
 // definido no .env. Sem isso, retorna 501 — não é uma rota pública aberta.
 //
+// Desde a Sprint 6 (autenticação), toda vaga pertence a um usuário — como
+// este endpoint é chamado servidor-a-servidor (sem sessão de navegador), ele
+// precisa saber A QUEM atribuir a vaga criada. Isso é feito via
+// N8N_TARGET_USER_ID no .env: o id do usuário (já cadastrado via login
+// normal ao menos uma vez) que vai "dono" das vagas criadas por automação.
+//
 // Uso esperado (a partir de um nó HTTP Request do n8n):
 //   POST /api/webhook/n8n
 //   header: x-webhook-secret: <mesmo valor de N8N_WEBHOOK_SECRET>
 //   body: { "description": "texto completo da vaga" }
-//
-// Analisa a vaga com a IA e já salva no banco, retornando o job criado.
 export async function POST(req: NextRequest) {
   const secret = process.env.N8N_WEBHOOK_SECRET;
+  const targetUserId = process.env.N8N_TARGET_USER_ID;
 
-  if (!secret) {
+  if (!secret || !targetUserId) {
     return NextResponse.json(
-      { error: "Webhook não configurado. Defina N8N_WEBHOOK_SECRET no .env para ativar." },
+      {
+        error:
+          "Webhook não configurado. Defina N8N_WEBHOOK_SECRET e N8N_TARGET_USER_ID no .env para ativar.",
+      },
       { status: 501 }
     );
   }
@@ -31,6 +39,14 @@ export async function POST(req: NextRequest) {
   const receivedSecret = req.headers.get("x-webhook-secret");
   if (receivedSecret !== secret) {
     return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
+  }
+
+  const targetUser = await prisma.user.findUnique({ where: { id: targetUserId } });
+  if (!targetUser) {
+    return NextResponse.json(
+      { error: "N8N_TARGET_USER_ID não corresponde a nenhum usuário cadastrado." },
+      { status: 500 }
+    );
   }
 
   try {
@@ -47,6 +63,7 @@ export async function POST(req: NextRequest) {
 
     const job = await prisma.job.create({
       data: {
+        userId: targetUser.id,
         description,
         company: analysis.company,
         title: analysis.title,

@@ -8,6 +8,8 @@
   `SkillCompatibility`, `ChecklistItem`.
 - **`dashboard/`** — componentes específicos da tela de Dashboard:
   `DashboardClient`, `FilterBar`, `StatsBar`.
+- **`auth/`** — componentes ligados à sessão do usuário: `UserMenu` (avatar,
+  nome e botão de sair, usado no cabeçalho do Dashboard).
 
 Critério usado: se o componente poderia ser reaproveitado em qualquer projeto
 sem saber o que é um "Job", vai em `ui/`. Se ele conhece o conceito de vaga

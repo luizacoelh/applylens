@@ -4,6 +4,7 @@ import { stringifyArray } from "@/lib/json";
 import { mapJob } from "@/lib/jobMapper";
 import { CreateJobRequest } from "@/types/job";
 import { JobLocation } from "@prisma/client";
+import { requireUser } from "@/lib/apiAuth";
 
 export const runtime = "nodejs";
 
@@ -17,7 +18,11 @@ function isValidUrl(value: string): boolean {
 }
 
 export async function GET() {
+  const { user, response } = await requireUser();
+  if (!user) return response;
+
   const jobs = await prisma.job.findMany({
+    where: { userId: user.id },
     orderBy: { createdAt: "desc" },
   });
 
@@ -25,6 +30,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const { user, response } = await requireUser();
+  if (!user) return response;
+
   try {
     const body: CreateJobRequest = await req.json();
     const {
@@ -70,6 +78,7 @@ export async function POST(req: NextRequest) {
     }
 
     const data = {
+      userId: user.id,
       description,
       company,
       title,
