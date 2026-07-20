@@ -21,12 +21,56 @@ model User {
   accounts Account[]
   sessions Session[]
   jobs     Job[]
+  profile  UserProfile?
+  aiUsage  AiUsage[]
 
   // limites de uso da API do Gemini, para evitar abuso (ver lib/rateLimit.ts)
   geminiCallCount   Int      @default(0)
   geminiCallResetAt DateTime @default(now())
 
   createdAt DateTime @default(now())
+}
+
+// Perfil profissional do usuário — separado de User (que é gerenciado pelo
+// PrismaAdapter) de propósito, pra não misturar dados de autenticação com
+// dados de produto. Onboarding: usuário sem UserProfile é redirecionado para
+// /perfil no primeiro acesso ao Dashboard (ver app/page.tsx).
+model UserProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  goal         String?  // objetivo profissional
+  interestArea String?  // área de interesse
+  experience   ExperienceLevel @default(NAO_INFORMADO)
+  skills       String   @default("[]") // JSON stringificado (array) — mesma decisão de lib/json.ts
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum ExperienceLevel {
+  ESTAGIO
+  JUNIOR
+  PLENO
+  SENIOR
+  NAO_INFORMADO
+}
+
+// Registro de cada chamada à API do Gemini, por usuário. Não tem painel de
+// visualização ainda (fora do escopo desta sprint) — existe pra permitir
+// isso no futuro sem precisar mudar o schema de novo.
+model AiUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String   // ex: "analyze_job"
+  tokens    Int?     // aproximado; a API do Gemini nem sempre devolve contagem exata
+  ip        String?  // usado pelo rate limit por IP, ver lib/ipRateLimit.ts
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([ip, createdAt])
 }
 
 model Account {

@@ -10,6 +10,10 @@ import ChecklistItem from "@/components/job/ChecklistItem";
 
 type Step = "input" | "preview";
 
+// Mesmo limite validado no servidor (app/api/analyze/route.ts) — aqui é só
+// pra dar feedback imediato, o servidor sempre revalida.
+const MAX_DESCRIPTION_LENGTH = 8000;
+
 function todayInputValue(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -38,6 +42,11 @@ export default function NovaVagaPage() {
 
     if (description.trim().length < 20) {
       setError("Cole a descrição completa da vaga (texto muito curto).");
+      return;
+    }
+
+    if (description.length > MAX_DESCRIPTION_LENGTH) {
+      setError(`Descrição muito longa (${description.length}/${MAX_DESCRIPTION_LENGTH} caracteres).`);
       return;
     }
 
@@ -148,8 +157,12 @@ export default function NovaVagaPage() {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Cole aqui o texto completo da vaga..."
               rows={12}
+              maxLength={MAX_DESCRIPTION_LENGTH}
               className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-4 py-3 text-sm text-[#E4E6EB] placeholder:text-[#4B4F5C] focus:outline-none focus:ring-2 focus:ring-[#378ADD] resize-none"
             />
+            <p className="mt-1 text-right text-xs text-[#7C8494]">
+              {description.length}/{MAX_DESCRIPTION_LENGTH}
+            </p>
 
             <button
               onClick={handleAnalyze}

@@ -1,9 +1,28 @@
+import Link from "next/link";
 import { compareSkills } from "@/lib/skillGap";
 
-export default function SkillCompatibility({ technologies }: { technologies: string[] }) {
+export default function SkillCompatibility({
+  technologies,
+  userSkills,
+}: {
+  technologies: string[];
+  userSkills: string[];
+}) {
   if (technologies.length === 0) return null;
 
-  const { known, missing } = compareSkills(technologies);
+  if (userSkills.length === 0) {
+    return (
+      <p className="text-sm text-[#7C8494]">
+        Adicione suas skills no{" "}
+        <Link href="/perfil" className="text-[#378ADD] hover:text-[#4FA0F0]">
+          seu perfil
+        </Link>{" "}
+        para ver a comparação com esta vaga.
+      </p>
+    );
+  }
+
+  const { known, missing } = compareSkills(technologies, userSkills);
   const percentage = Math.round((known.length / technologies.length) * 100);
 
   return (
@@ -32,9 +51,11 @@ export default function SkillCompatibility({ technologies }: { technologies: str
       </div>
       {missing.length > 0 && (
         <p className="mt-3 text-xs text-[#7C8494]">
-          A lista de tecnologias que você domina fica em{" "}
-          <code className="text-[#378ADD]">lib/skills.ts</code> — edite lá se algo estiver
-          desatualizado.
+          Lista de skills desatualizada?{" "}
+          <Link href="/perfil" className="text-[#378ADD] hover:text-[#4FA0F0]">
+            Edite seu perfil
+          </Link>
+          .
         </p>
       )}
     </div>

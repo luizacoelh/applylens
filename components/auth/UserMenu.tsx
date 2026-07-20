@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { signOut } from "@/auth";
 import type { Session } from "next-auth";
 
@@ -13,6 +14,9 @@ export default function UserMenu({ user }: { user: Session["user"] }) {
         />
       )}
       <span className="hidden text-sm text-[#C4C7D0] sm:inline">{user.name ?? user.email}</span>
+      <Link href="/perfil" className="font-mono text-xs text-[#7C8494] hover:text-[#378ADD]">
+        Perfil
+      </Link>
       <form
         action={async () => {
           "use server";

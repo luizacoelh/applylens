@@ -12,6 +12,15 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  // Onboarding: usuário sem perfil ainda (novo, ou conta antiga de antes
+  // desta sprint) é levado a completar o perfil antes de ver o Dashboard.
+  // É só um redirect, não bloqueia nada de fato — a pessoa pode voltar a
+  // qualquer momento em /perfil, e nenhum dado existente é afetado.
+  const profile = await prisma.userProfile.findUnique({ where: { userId: session.user.id } });
+  if (!profile) {
+    redirect("/perfil?onboarding=true");
+  }
+
   const jobs = await prisma.job.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
@@ -28,6 +37,12 @@ export default async function DashboardPage() {
             <h1 className="text-2xl font-semibold">Suas candidaturas</h1>
           </div>
           <div className="flex items-center gap-3">
+            <a
+              href="/api/jobs/export"
+              className="inline-block w-fit rounded-md border border-[#2A2D3A] px-4 py-2 text-sm font-medium text-[#C4C7D0] transition-colors hover:border-[#378ADD]/50"
+            >
+              Exportar CSV
+            </a>
             <Link
               href="/nova-vaga"
               className="inline-block w-fit rounded-md bg-[#378ADD] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#4FA0F0]"

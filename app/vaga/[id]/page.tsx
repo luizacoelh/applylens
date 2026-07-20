@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { mapJob } from "@/lib/jobMapper";
+import { parseArray } from "@/lib/json";
 import StatusSelect from "@/components/job/StatusSelect";
 import JobMetaEditor from "@/components/job/JobMetaEditor";
 import DetailSection from "@/components/ui/DetailSection";
@@ -33,6 +34,14 @@ export default async function VagaDetalhesPage({
   if (!rawJob || rawJob.userId !== session.user.id) notFound();
 
   const job = mapJob(rawJob);
+
+  // Skills do usuário logado, pra comparação — sempre do dono da sessão
+  // atual, nunca de outro usuário (mesma regra de isolamento do resto do app).
+  const profile = await prisma.userProfile.findUnique({
+    where: { userId: session.user.id },
+    select: { skills: true },
+  });
+  const userSkills = parseArray(profile?.skills);
 
   return (
     <main className="min-h-screen bg-[#111218] text-[#E4E6EB] px-4 py-16">
@@ -91,7 +100,7 @@ export default async function VagaDetalhesPage({
 
           {job.technologies.length > 0 && (
             <DetailSection label="Compatibilidade com suas skills">
-              <SkillCompatibility technologies={job.technologies} />
+              <SkillCompatibility technologies={job.technologies} userSkills={userSkills} />
             </DetailSection>
           )}
 

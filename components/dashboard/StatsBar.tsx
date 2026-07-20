@@ -21,6 +21,10 @@ export default function StatsBar({ jobs }: { jobs: Job[] }) {
     count: jobs.filter((j) => j.status === status).length,
   }));
 
+  const total = jobs.length;
+  const offers = jobs.filter((j) => j.status === "OFERTA").length;
+  const conversionRate = total > 0 ? Math.round((offers / total) * 1000) / 10 : 0;
+
   const techs = topTechnologies(jobs);
 
   if (jobs.length === 0) return null;
@@ -29,7 +33,7 @@ export default function StatsBar({ jobs }: { jobs: Job[] }) {
     <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
       <div className="rounded-lg border border-[#2A2D3A] bg-[#1A1B23] p-4">
         <p className="font-mono text-xs text-[#7C8494] uppercase tracking-wide mb-3">
-          Funil ({jobs.length} {jobs.length === 1 ? "vaga" : "vagas"})
+          Funil ({total} {total === 1 ? "vaga" : "vagas"})
         </p>
         <div className="flex flex-wrap gap-4">
           {statusCounts.map(({ status, count }) => (
@@ -38,6 +42,10 @@ export default function StatsBar({ jobs }: { jobs: Job[] }) {
               <p className="text-xs text-[#7C8494]">{STATUS_LABELS[status]}</p>
             </div>
           ))}
+          <div>
+            <p className="text-xl font-semibold text-[#3FB950]">{conversionRate}%</p>
+            <p className="text-xs text-[#7C8494]">Taxa de conversão</p>
+          </div>
         </div>
       </div>
 

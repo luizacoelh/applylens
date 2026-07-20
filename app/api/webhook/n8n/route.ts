@@ -3,9 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { stringifyArray } from "@/lib/json";
 import { mapJob } from "@/lib/jobMapper";
 import { analyzeJobWithGemini } from "@/lib/gemini";
+import { logAiUsage } from "@/lib/aiUsage";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+
+// Mesmo limite do /api/analyze — ver comentário lá.
+const MAX_DESCRIPTION_LENGTH = 8000;
 
 // Endpoint preparado para uma futura automação via n8n (ex: um workflow que
 // monitora e-mails ou um feed de vagas e dispara isso automaticamente).
@@ -59,7 +63,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (description.length > MAX_DESCRIPTION_LENGTH) {
+      return NextResponse.json(
+        { error: `Descrição muito longa (limite de ${MAX_DESCRIPTION_LENGTH} caracteres).` },
+        { status: 400 }
+      );
+    }
+
     const analysis = await analyzeJobWithGemini(description);
+    await logAiUsage({ userId: targetUser.id, action: "analyze_job_webhook" });
 
     const job = await prisma.job.create({
       data: {
