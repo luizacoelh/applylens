@@ -1,12 +1,20 @@
 import type { DefaultSession } from "next-auth";
 
-// O tipo padrão de session.user não inclui `id` — adicionamos aqui para
-// poder usar session.user.id com segurança de tipos em todo o projeto
-// (ver callbacks.session em auth.ts, que é quem realmente popula o valor).
+// O tipo padrão de session.user não inclui `id`/`isAdmin` — adicionamos
+// aqui para poder usar esses campos com segurança de tipos.
 declare module "next-auth" {
   interface Session {
     user: {
       id: string;
+      isAdmin: boolean;
     } & DefaultSession["user"];
+  }
+}
+
+// O PrismaAdapter retorna um AdapterUser. Como nosso model User possui
+// `isAdmin`, adicionamos esse campo ao tipo do AdapterUser também.
+declare module "next-auth/adapters" {
+  interface AdapterUser {
+    isAdmin: boolean;
   }
 }

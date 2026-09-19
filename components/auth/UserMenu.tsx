@@ -17,6 +17,11 @@ export default function UserMenu({ user }: { user: Session["user"] }) {
       <Link href="/perfil" className="font-mono text-xs text-[#7C8494] hover:text-[#378ADD]">
         Perfil
       </Link>
+      {user.isAdmin && (
+        <Link href="/admin" className="font-mono text-xs text-[#7C8494] hover:text-[#378ADD]">
+          Admin
+        </Link>
+      )}
       <form
         action={async () => {
           "use server";

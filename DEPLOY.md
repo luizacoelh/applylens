@@ -99,6 +99,20 @@ Preview tem uma URL com hash aleatório, que não bate com nenhuma callback
 URL cadastrada no Google/GitHub. Isso é esperado; teste login sempre no
 domínio de Production.
 
+## 7. Virar admin (uma vez, depois do primeiro login)
+
+Não existe cadastro de admin pela interface de propósito — evita
+autopromoção. Depois de logar pela primeira vez em produção:
+
+```bash
+node scripts/set-admin.mjs seu-email@exemplo.com
+```
+
+Com `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN` preenchidos no `.env`, o script
+detecta automaticamente que deve mexer no banco do Turso (produção), não no
+SQLite local. Depois disso, `/admin` fica acessível, e outras contas podem
+ser promovidas direto pelo painel.
+
 ## Sobre o tempo de execução da análise por IA
 
 A chamada ao Gemini já levou entre 16s e 27s em teste. As rotas

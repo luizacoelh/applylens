@@ -33,10 +33,13 @@ usuário, com dados isolados e persistidos.
 - Edição de status, URL, local, salário e data da candidatura por vaga
 - Isolamento total de dados por usuário — nenhuma consulta ao banco retorna
   registros de outro usuário
-- Limite diário de uso da IA por usuário, limite adicional por IP, e limite
-  de tamanho de entrada — proteção contra abuso da API do Gemini
+- Limite de uso da IA por usuário e por IP, e limite de tamanho de entrada —
+  proteção contra abuso da API do Gemini, com limites globais e por usuário
+  editáveis em `/admin` sem precisar de deploy
 - Registro de uso da IA por usuário (tabela `AiUsage`), preparado para um
   futuro painel de consumo
+- Painel `/admin` (restrito a administradores) para ajustar limites globais
+  e o limite individual de cada usuário
 - Endpoint de webhook para automação futura via n8n (desativado por padrão)
 
 ## Tecnologias utilizadas
@@ -173,17 +176,25 @@ deploy contínuo pela integração Git da Vercel.
   checagem de sessão repetida em cada rota de API e Server Component (ver
   seção Arquitetura).
 - **Controle de uso da IA**:
-  - Limite de tamanho de entrada (8000 caracteres) antes de qualquer
-    chamada ao Gemini, validado no cliente e revalidado no servidor.
-  - Limite diário por usuário (20 análises/dia), contado no banco — não em
-    memória, porque funções serverless não compartilham memória entre
-    instâncias.
-  - Limite adicional por IP (30 análises/hora, somando todas as contas que
-    usarem aquele IP), para dificultar abuso via múltiplas contas. Reaproveita
-    a tabela `AiUsage` já existente para o registro de consumo, em vez de
-    criar uma tabela nova só para isso.
-  - Cada chamada é registrada em `AiUsage` (usuário, ação, IP, data) —
-    preparado para um futuro painel de consumo, ainda não implementado.
+  - Limite de tamanho de entrada (padrão 8000 caracteres, configurável em
+    `/admin`) antes de qualquer chamada ao Gemini, validado no cliente e
+    revalidado no servidor.
+  - Limite diário por usuário (padrão 20 análises/dia, configurável
+    globalmente ou por conta específica em `/admin`), contado no banco de
+    forma atômica — a checagem e o incremento acontecem numa única operação
+    SQL, evitando que duas requisições simultâneas leiam o mesmo contador
+    desatualizado e ultrapassem o limite.
+  - Limite adicional por IP (padrão 30 análises/hora, configurável),
+    somando todas as contas que usarem aquele IP, para dificultar abuso via
+    múltiplas contas. Reaproveita a tabela `AiUsage` já existente para o
+    registro de consumo, em vez de criar uma tabela nova só para isso.
+  - Cada chamada é registrada em `AiUsage` (usuário, ação, tokens
+    aproximados, IP, data) — preparado para um futuro painel de consumo
+    mais detalhado.
+- **Painel `/admin`**: restrito a contas com `isAdmin = true`. Acesso
+  negado responde 404, não 403 (mesma lógica de não confirmar a existência
+  do recurso). O primeiro admin é definido por script
+  (`scripts/set-admin.mjs`), nunca por autopromoção via interface.
 - **Variáveis sensíveis** nunca commitadas (`.env` no `.gitignore`); `.env.example`
   documenta todas as chaves necessárias sem valores reais.
 

@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/apiAuth";
 import { checkAndConsumeGeminiQuota } from "@/lib/rateLimit";
 import { checkIpRateLimit, getClientIp } from "@/lib/ipRateLimit";
 import { logAiUsage } from "@/lib/aiUsage";
+import { getAppSettings } from "@/lib/appSettings";
 
 // A chamada ao Gemini já levou entre 16s e 27s em teste (com retry de rate
 // limit). O padrão da Vercel para funções serverless costuma ser bem menor
@@ -13,15 +14,11 @@ import { logAiUsage } from "@/lib/aiUsage";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-// Limite de caracteres da descrição enviada ao Gemini. Vagas reais raramente
-// passam de 3-4 mil caracteres; 8000 dá margem confortável sem deixar
-// alguém colar um texto gigante (e caro em tokens) na caixa por engano ou
-// de propósito.
-const MAX_DESCRIPTION_LENGTH = 8000;
-
 export async function POST(req: NextRequest) {
   const { user, response } = await requireUser();
   if (!user) return response;
+
+  const settings = await getAppSettings();
 
   const ip = getClientIp(req);
   const ipCheck = await checkIpRateLimit(ip);
@@ -52,10 +49,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (description.length > MAX_DESCRIPTION_LENGTH) {
+    if (description.length > settings.maxDescriptionLength) {
       return NextResponse.json(
         {
-          error: `Descrição muito longa (${description.length} caracteres, limite de ${MAX_DESCRIPTION_LENGTH}). Cole só o texto da vaga, sem conteúdo extra da página.`,
+          error: `Descrição muito longa (${description.length} caracteres, limite de ${settings.maxDescriptionLength}). Cole só o texto da vaga, sem conteúdo extra da página.`,
         },
         { status: 400 }
       );
@@ -63,9 +60,14 @@ export async function POST(req: NextRequest) {
 
     const analysis = await analyzeJobWithGemini(description);
 
-    // Não bloqueia a resposta — se o registro falhar, a análise já foi
-    // entregue com sucesso de qualquer forma (ver lib/aiUsage.ts).
-    await logAiUsage({ userId: user.id, action: "analyze_job", ip });
+    // Estimativa grosseira de tokens (≈4 caracteres por token em
+    // português/inglês) — a API do Gemini nem sempre devolve contagem
+    // exata, e isso é só para dar uma ordem de grandeza no futuro painel de
+    // consumo, não para cobrança ou limite real. Não bloqueia a resposta —
+    // se o registro falhar, a análise já foi entregue com sucesso de
+    // qualquer forma (ver lib/aiUsage.ts).
+    const approxTokens = Math.ceil(description.length / 4);
+    await logAiUsage({ userId: user.id, action: "analyze_job", tokens: approxTokens, ip });
 
     return NextResponse.json(analysis);
   } catch (error) {

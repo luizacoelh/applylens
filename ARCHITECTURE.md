@@ -14,6 +14,7 @@ applylens/
     page.tsx                    # Dashboard (exige sessão + perfil, filtra por usuário)
     login/page.tsx               # Tela de login (Google/GitHub)
     perfil/page.tsx              # Perfil do usuário (onboarding + edição)
+    admin/page.tsx                # Limites globais + gestão de usuários (admin only)
     privacidade/page.tsx         # Política de Privacidade
     termos/page.tsx              # Termos de Uso
     nova-vaga/page.tsx          # Cadastro de vaga (Analisar → Confirmar → Salvar)
@@ -26,6 +27,9 @@ applylens/
       jobs/[id]/route.ts        # GET / PATCH / DELETE — só se for dono da vaga
       jobs/export/route.ts      # Exporta as vagas do usuário logado em CSV
       webhook/n8n/route.ts      # Endpoint para automações futuras (desativado por padrão)
+      admin/settings/route.ts   # GET/PUT dos limites globais (admin only)
+      admin/users/route.ts      # Lista usuários (admin only)
+      admin/users/[id]/route.ts # Edita override de limite / isAdmin de um usuário (admin only)
     error.tsx                   # Erros dentro de rotas
     global-error.tsx            # Erros no próprio layout raiz
     not-found.tsx / loading.tsx
@@ -33,14 +37,17 @@ applylens/
     ui/                         # Componentes genéricos de apresentação
     job/                        # Componentes do domínio "vaga"
     dashboard/                  # Componentes específicos do Dashboard
-    auth/                       # UserMenu (avatar + link de perfil + logout)
+    auth/                       # UserMenu (avatar + link de perfil + admin + logout)
     profile/                    # ProfileForm
+    admin/                      # AppSettingsForm, UsersTable
     README.md                   # Critério de organização usado acima
   lib/
     prisma.ts                   # Singleton do PrismaClient — escolhe adapter (local/Turso) automaticamente
     gemini.ts                   # Integração com a API do Gemini (inicialização preguiçosa)
     apiAuth.ts                  # requireUser() — checagem de sessão nas rotas de API
-    rateLimit.ts                # Limite diário de chamadas ao Gemini por usuário
+    adminAuth.ts                # requireAdmin() — checagem de sessão + isAdmin nas rotas de admin
+    appSettings.ts              # Limites globais editáveis (tabela AppSettings, singleton)
+    rateLimit.ts                # Limite diário de IA por usuário — atômico, sem condição de corrida
     ipRateLimit.ts              # Limite adicional de chamadas ao Gemini por IP
     aiUsage.ts                  # Registro de cada chamada à IA (tabela AiUsage)
     jobMapper.ts                # Converte o registro do Prisma para o tipo Job da app
@@ -48,14 +55,16 @@ applylens/
     json.ts                     # parseArray/stringifyArray (campos JSON-em-string)
     skillGap.ts                 # Compara tecnologias da vaga com as skills do UserProfile
   prisma/
-    schema.prisma                # User/Account/Session/VerificationToken (Auth.js) + UserProfile + AiUsage + Job
+    schema.prisma                # User/Account/Session/VerificationToken (Auth.js) + UserProfile + AiUsage + AppSettings + Job
     prisma.config.ts            # Config do CLI — sempre aponta para o SQLite local
   scripts/
     apply-turso-migrations.mjs  # Aplica migrations no Turso sem precisar da CLI deles
     fix-turso-job-table.mjs     # Referência: como corrigir uma tabela específica sem apagar as demais
+    sync-turso-schema.mjs       # Referência: cria tabelas novas faltantes sem reaplicar o histórico inteiro
+    set-admin.mjs                # Bootstrap: marca um e-mail como admin (local ou Turso)
   types/
     job.ts / profile.ts
-    next-auth.d.ts              # Adiciona `id` ao tipo Session.user
+    next-auth.d.ts              # Adiciona `id` e `isAdmin` ao tipo Session.user
 ```
 
 ## Decisões documentadas de propósito
@@ -100,3 +109,35 @@ applylens/
   normalizar em tabelas próprias.
 - **Checklist é somente leitura.** Persistir o estado "concluído" por item
   exigiria mudar o schema — fora do escopo atual.
+- **Limites globais (`AppSettings`) em vez de constantes no código.** Antes,
+  `DAILY_LIMIT`, `IP_LIMIT` e `MAX_DESCRIPTION_LENGTH` eram números fixos —
+  mudar qualquer um exigia editar código e fazer deploy. Agora ficam numa
+  tabela singleton (`AppSettings`, id fixo `"singleton"`), editável em
+  `/admin` sem deploy. `lib/appSettings.ts` cria a linha com valores padrão
+  automaticamente se ela ainda não existir.
+- **Override de limite por usuário (`User.dailyAiLimitOverride`)** em vez de
+  um caso especial no código para uma conta específica (ex: a sua). Nulo =
+  usa o padrão global; qualquer conta pode receber um valor diferente via
+  `/admin`, inclusive maior que o padrão.
+- **Rate limit por usuário corrigido para ser atômico** (`lib/rateLimit.ts`).
+  A versão original fazia `findUnique` + `update` como duas operações
+  separadas — sob concorrência (duplo clique, retry automático), duas
+  requisições podiam ler o mesmo contador antes de qualquer uma escrever,
+  permitindo passar do limite por 1-2 chamadas. A versão atual usa
+  `updateMany` com a condição de limite dentro do próprio `WHERE` da query
+  SQL, tornando a checagem e o incremento uma única operação atômica no
+  banco. Documentado no próprio arquivo o único caso extremo remanescente
+  (janela de 24h expirando exatamente no mesmo instante de duas requisições
+  concorrentes) e por que não vale a complexidade de eliminá-lo.
+- **Painel `/admin` enxuto, não um CRUD completo.** Uma tela só, com os
+  limites globais e uma tabela de usuários com override e toggle de admin —
+  sem gráficos, sem filtros, sem paginação. Proporcional ao estágio atual do
+  produto (poucos usuários); pode crescer depois se necessário.
+- **Primeiro admin via script (`scripts/set-admin.mjs`), não via UI.** Não
+  existe cadastro de admin pela interface de propósito — evita a
+  possibilidade de qualquer usuário se autopromover. O primeiro admin é
+  definido rodando o script uma vez; depois disso, promoções seguintes
+  acontecem pelo próprio painel.
+- **`requireAdmin()` responde 404 pra quem não é admin, não 403** — mesma
+  lógica de "não confirmar a existência do recurso" já usada no resto do
+  app (ver isolamento por usuário acima).

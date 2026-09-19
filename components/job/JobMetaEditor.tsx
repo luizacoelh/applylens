@@ -63,8 +63,6 @@ export default function JobMetaEditor({
 
   return (
     <div className="rounded-lg border border-[#2A2D3A] bg-[#1A1B23] p-5 space-y-4">
-      <p className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">Detalhes da candidatura</p>
-
       <div>
         <label htmlFor="url" className="text-xs text-[#7C8494]">
           Link da vaga

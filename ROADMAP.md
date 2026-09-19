@@ -12,6 +12,32 @@ Notion.
 
 ## Concluído
 
+### Sprint 8 — Revisão de segurança/arquitetura + painel admin
+- [x] Corrigido bug visual: "Detalhes da candidatura" aparecia duplicado na
+  tela de detalhes da vaga (título repetido entre o `DetailSection` e o
+  próprio `JobMetaEditor`)
+- [x] Corrigida condição de corrida no rate limit de IA por usuário
+  (`lib/rateLimit.ts`) — checagem e incremento agora são uma única operação
+  atômica no banco, em vez de leitura e escrita separadas
+- [x] Limites globais (análises/dia por usuário, análises/hora por IP,
+  tamanho máximo de descrição) migrados de constantes no código para a
+  tabela `AppSettings`, editável sem deploy
+- [x] Override de limite diário por usuário (`User.dailyAiLimitOverride`) —
+  substitui a necessidade de um caso especial no código para contas
+  específicas
+- [x] Painel `/admin` (restrito por `User.isAdmin`): edição dos limites
+  globais e da tabela de usuários (override individual + promover/rebaixar
+  admin)
+- [x] Registro de uso de IA agora inclui uma estimativa aproximada de
+  tokens (`AiUsage.tokens`), para dar mais contexto num futuro painel de
+  consumo
+- [x] Revisão do fluxo OAuth (Google e GitHub) — confirmado configurado
+  corretamente em produção
+- [x] `.env.example` recriado (tinha sido perdido num merge anterior) e
+  atualizado com todas as variáveis atuais
+- [x] Checklist documentado para evitar bugs de merge manual entre pacotes
+  de mudanças e o projeto local (ver `ARCHITECTURE.md`)
+
 ### Sprint 7 — Polimento SaaS
 - [x] `UserProfile` (1:1 com `User`): objetivo, área de interesse, nível de
   experiência, skills
@@ -56,9 +82,9 @@ Notion.
 
 ## Próximos passos (em ordem de prioridade)
 
-1. **Painel de consumo de IA** — a tabela `AiUsage` já existe e já é
-   alimentada; falta uma tela (provavelmente em `/perfil` ou uma nova
-   `/uso`) mostrando histórico e total aproximado por usuário.
+1. **Painel de consumo de IA (dentro de `/admin`)** — a tabela `AiUsage` já
+   registra usuário, ação, tokens aproximados e IP; falta agregar isso numa
+   visualização (total por usuário, por dia) dentro do painel já existente.
 2. **Ativar Magic Link por e-mail** — estrutura pronta (`VerificationToken`,
    comentário em `auth.ts`); falta escolher um provedor de envio (Resend, por
    exemplo).

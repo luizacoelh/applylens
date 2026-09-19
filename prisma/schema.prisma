@@ -28,7 +28,25 @@ model User {
   geminiCallCount   Int      @default(0)
   geminiCallResetAt DateTime @default(now())
 
+  // dailyAiLimitOverride nulo = usa o limite global de AppSettings.
+  // Serve tanto para dar um limite maior a uma conta específica (inclusive a
+  // sua) quanto para restringir uma conta problemática, sem precisar de
+  // deploy — ver /admin.
+  dailyAiLimitOverride Int?
+  isAdmin              Boolean @default(false)
+
   createdAt DateTime @default(now())
+}
+
+// Configuração global do app, editável via /admin sem precisar de deploy.
+// Linha única (singleton) — sempre lida/criada com id fixo "singleton", ver
+// lib/appSettings.ts.
+model AppSettings {
+  id                   String   @id @default("singleton")
+  dailyAiLimit         Int      @default(20)
+  ipHourlyLimit        Int      @default(30)
+  maxDescriptionLength Int      @default(8000)
+  updatedAt            DateTime @updatedAt
 }
 
 // Perfil profissional do usuário — separado de User (que é gerenciado pelo

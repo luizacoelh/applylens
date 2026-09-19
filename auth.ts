@@ -55,12 +55,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     // Com session strategy "database", o Auth.js já injeta `user` completo
     // (vindo da tabela User) em vez de um token JWT — só precisamos garantir
-    // que `session.user.id` existe, já que o tipo padrão não inclui id.
+    // que `session.user.id`/`isAdmin` existem, já que o tipo padrão não
+    // inclui esses campos.
     async session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
-      }
-      return session;
-    },
+  if (session.user) {
+    session.user.id = user.id;
+    session.user.isAdmin = (user as typeof user & { isAdmin: boolean }).isAdmin;
+  }
+  return session;
+},
   },
 });
