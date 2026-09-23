@@ -1,3 +1,4 @@
+import GlassPanel from "@/components/ui/Glass";
 import { signIn } from "@/auth";
 
 export default async function LoginPage({
@@ -9,15 +10,35 @@ export default async function LoginPage({
   const redirectTo = callbackUrl && callbackUrl.startsWith("/") ? callbackUrl : "/";
 
   return (
-    <main className="min-h-screen bg-[#111218] text-[#E4E6EB] flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <p className="font-mono text-sm text-[#378ADD] mb-2 text-center">$ applylens --login</p>
-        <h1 className="text-2xl font-semibold mb-2 text-center">Entrar no ApplyLens</h1>
-        <p className="text-sm text-[#7C8494] mb-8 text-center">
-          Organize suas candidaturas com ajuda de IA.
-        </p>
+    <main className="min-h-screen text-[#E4E6EB] flex items-center justify-center px-4">
+      <div className="studio-backdrop">
+        <div className="studio-glow" style={{ width: 480, height: 480, top: -140, left: -120, background: "radial-gradient(circle, rgba(55,138,221,0.55), transparent 70%)" }} />
+        <div className="studio-glow" style={{ width: 420, height: 420, bottom: -160, right: -100, background: "radial-gradient(circle, rgba(133,183,235,0.35), transparent 70%)" }} />
+        <div className="studio-glow" style={{ width: 260, height: 260, top: "55%", left: "62%", background: "radial-gradient(circle, rgba(180,220,255,0.25), transparent 70%)" }} />
+      </div>
 
-        <div className="rounded-lg border border-[#2A2D3A] bg-[#1A1B23] p-6 space-y-3">
+      <div className="w-full max-w-sm">
+        <GlassPanel radius={28} plateClassName="px-9 py-11">
+          <div className="mb-[22px] flex items-center justify-center gap-2">
+            <span
+              className="h-[22px] w-[22px] rounded-[7px]"
+              style={{
+                background: "linear-gradient(155deg, #85B7EB, #378ADD)",
+                boxShadow: "0 0 12px rgba(55,138,221,0.55), inset 0 1px 1px rgba(255,255,255,0.5)",
+              }}
+            />
+            <span className="text-[15px] font-semibold" style={{ fontFamily: "var(--font-outfit)" }}>
+              ApplyLens
+            </span>
+          </div>
+
+          <h1 className="text-[23px] font-semibold text-center mb-2" style={{ fontFamily: "var(--font-outfit)" }}>
+            Entrar na sua conta
+          </h1>
+          <p className="text-sm text-[#A9B2C0] text-center mb-[30px]">
+            Organize suas candidaturas com ajuda de IA.
+          </p>
+
           <form
             action={async () => {
               "use server";
@@ -26,7 +47,8 @@ export default async function LoginPage({
           >
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-3 rounded-md border border-[#2A2D3A] bg-[#111218] py-3 text-sm font-medium text-[#E4E6EB] transition-colors hover:border-[#378ADD]/50"
+              className="glass-btn flex w-full items-center justify-center gap-3 rounded-2xl py-3 mb-3 text-sm font-medium text-[#F2F4F7]"
+              style={{ fontFamily: "var(--font-outfit)" }}
             >
               <GoogleIcon />
               Entrar com Google
@@ -41,25 +63,34 @@ export default async function LoginPage({
           >
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-3 rounded-md border border-[#2A2D3A] bg-[#111218] py-3 text-sm font-medium text-[#E4E6EB] transition-colors hover:border-[#378ADD]/50"
+              className="glass-btn flex w-full items-center justify-center gap-3 rounded-2xl py-3 text-sm font-medium text-[#F2F4F7]"
+              style={{ fontFamily: "var(--font-outfit)" }}
             >
               <GitHubIcon />
               Entrar com GitHub
             </button>
           </form>
-        </div>
 
-        <p className="mt-6 text-center text-xs text-[#7C8494]">
-          Ao entrar, você concorda com a{" "}
-          <a href="/privacidade" className="text-[#378ADD] hover:text-[#4FA0F0]">
-            Política de Privacidade
-          </a>{" "}
-          e os{" "}
-          <a href="/termos" className="text-[#378ADD] hover:text-[#4FA0F0]">
-            Termos de Uso
-          </a>
-          .
-        </p>
+          <div className="flex items-center gap-[10px] my-[22px]">
+            <span className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <span className="text-[11px] tracking-wide text-[#6B7484]" style={{ fontFamily: "var(--font-outfit)" }}>
+              SEGURO E CRIPTOGRAFADO
+            </span>
+            <span className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+          </div>
+
+          <p className="text-center text-xs text-[#6B7484] leading-relaxed">
+            Ao entrar, você concorda com a{" "}
+            <a href="/privacidade" className="text-[#85B7EB] hover:underline">
+              Política de Privacidade
+            </a>{" "}
+            e os{" "}
+            <a href="/termos" className="text-[#85B7EB] hover:underline">
+              Termos de Uso
+            </a>
+            .
+          </p>
+        </GlassPanel>
       </div>
     </main>
   );

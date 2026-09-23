@@ -1,26 +1,198 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Design tokens do ApplyLens. O app é sempre escuro (nunca teve modo claro de
+   verdade) — antes disso era feito com classes Tailwind repetidas em ~27
+   arquivos (bg-[#1A1B23] etc). Centralizado aqui para consistência e pra dar
+   um lugar único de ajustar cor/vidro no futuro.
+   --------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-0: #0a0c10;
+  --bg-1: #0e1117;
+  --accent: #378adb;
+  --accent-light: #85b7eb;
+  --text-primary: #f2f4f7;
+  --text-secondary: #a9b2c0;
+  --text-muted: #6b7484;
+  --green: #4ade80;
+  --amber: #f0b429;
+  --red: #e5534b;
+
+  --background: var(--bg-0);
+  --foreground: var(--text-primary);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  /* font-mono existe só por compatibilidade com classes ainda não migradas —
+     aponta pra a mesma fonte de UI (Outfit), não mais um monoespaçado de
+     terminal. Ver ARCHITECTURE.md, "Identidade visual — vidro". */
+  --font-mono: var(--font-outfit);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  background: var(--bg-0);
+  color: var(--text-primary);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), "Inter", system-ui, sans-serif;
+}
+
+/* ---------------------------------------------------------------------------
+   Sistema de vidro ("liquid glass"). Três camadas compostas, sempre juntas:
+
+   .glass-rim     → moldura externa com gradiente de "luz pegando a borda"
+   .glass-surface → o vidro em si: blur + saturação + distorção via filtro SVG
+                    (#glass-distort, definido uma vez em app/layout.tsx)
+   .glass-plate   → fundo quase opaco POR DENTRO do vidro, onde o texto mora —
+                    nunca escrevemos texto direto sobre o vidro transparente,
+                    isso é a regra de contraste/acessibilidade do projeto.
+
+   Decisão de performance (pedida explicitamente, documentada por ser um
+   trade-off real): o filtro de distorção é aplicado em TODO elemento de
+   vidro, incluindo elementos pequenos repetidos (badges, chips). Isso é mais
+   caro de renderizar que um blur simples, especialmente em telas com muitos
+   elementos de vidro simultâneos — decisão consciente pela estética "iOS
+   Liquid Glass", aceitando o custo de performance em troca do efeito.
+   Se algum dia isso pesar demais num dispositivo real, o ajuste é remover
+   `url(#glass-distort)` do backdrop-filter em .glass-surface--sm (mantendo
+   blur) sem tocar nos elementos grandes.
+   --------------------------------------------------------------------------- */
+.glass-rim {
+  position: relative;
+  border-radius: var(--glass-radius, 22px);
+  padding: 1.5px;
+  background: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.05) 16%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(133, 183, 235, 0.08) 72%,
+    rgba(255, 255, 255, 0.4) 88%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  box-shadow: 0 20px 40px -18px rgba(0, 0, 0, 0.55);
+}
+
+.glass-surface {
+  position: relative;
+  border-radius: calc(var(--glass-radius, 22px) - 1px);
+  overflow: hidden;
+  backdrop-filter: blur(18px) saturate(140%) url(#glass-distort);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+}
+
+.glass-surface::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -15%;
+  width: 120%;
+  height: 60%;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 60%);
+  transform: rotate(-5deg);
+  pointer-events: none;
+}
+
+.glass-surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  pointer-events: none;
+}
+
+.glass-plate {
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(10, 13, 18, 0.8), rgba(10, 13, 18, 0.88));
+}
+
+/* Pontos concentrados de luz na borda — não uniforme, imita reflexo real. */
+.glass-hotspot {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(6px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 2;
+}
+.glass-hotspot--tl {
+  width: 40px;
+  height: 40px;
+  top: -8px;
+  left: 20px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent 70%);
+}
+.glass-hotspot--br {
+  width: 30px;
+  height: 30px;
+  bottom: -4px;
+  right: 40px;
+  background: radial-gradient(circle, rgba(133, 183, 235, 0.8), transparent 70%);
+}
+
+/* Fundo de estúdio (glows) usado atrás do conteúdo em telas cheias — ver
+   uso em app/login/page.tsx e app/page.tsx. */
+.studio-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: radial-gradient(circle at 15% 0%, #12161f 0%, var(--bg-0) 50%), var(--bg-0);
+}
+.studio-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.45;
+}
+
+/* Versão leve do vidro pra elementos pequenos e repetidos (badges, chips) —
+   mesma distorção (a pedido, mantida em todo lugar), sem a moldura de
+   três camadas completa nem os pontos de luz, que ficariam poluídos em
+   listas com muitos badges. */
+.glass-chip {
+  backdrop-filter: blur(8px) saturate(140%) url(#glass-distort);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+}
+
+/* Inputs, selects e o container do toggle cards/tabela — vidro leve,
+   sem moldura de três camadas (ficaria pesado demais em controles de
+   formulário que o usuário olha o tempo todo). */
+.glass-input {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px) saturate(140%) url(#glass-distort);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.glass-input:focus {
+  outline: none;
+  border-color: rgba(133, 183, 235, 0.45);
+  box-shadow: 0 0 0 2px rgba(55, 138, 219, 0.35);
+}
+
+/* Botão "outline" translúcido — usado nos botões de login OAuth e outras
+   ações secundárias. Levanta e ganha um brilho azul sutil no hover. */
+.glass-btn {
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(10px) saturate(140%) url(#glass-distort);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.glass-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(133, 183, 235, 0.45);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+  box-shadow: 0 6px 18px -6px rgba(55, 138, 221, 0.35);
+}
+.glass-btn:active {
+  transform: translateY(0);
 }

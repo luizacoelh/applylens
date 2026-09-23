@@ -29,23 +29,45 @@ export default async function DashboardPage() {
   const jobList = jobs.map(mapJob);
 
   return (
-    <main className="min-h-screen bg-[#111218] text-[#E4E6EB] px-4 py-16">
+    <main className="min-h-screen text-[#E4E6EB] px-4 py-10">
+      <div className="studio-backdrop">
+        <div className="studio-glow" style={{ width: 560, height: 560, top: -220, left: -160, background: "radial-gradient(circle, rgba(55,138,221,0.5), transparent 70%)" }} />
+        <div className="studio-glow" style={{ width: 480, height: 480, top: "30%", right: -200, background: "radial-gradient(circle, rgba(133,183,235,0.3), transparent 70%)" }} />
+      </div>
+
       <div className="mx-auto max-w-5xl">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="font-mono text-sm text-[#378ADD] mb-1">ApplyLens Dashboard</p>
-            <h1 className="text-2xl font-semibold">Suas candidaturas</h1>
+            <div className="mb-1 flex items-center gap-2">
+              <span
+                className="h-[22px] w-[22px] rounded-[7px]"
+                style={{
+                  background: "linear-gradient(155deg, #85B7EB, #378ADD)",
+                  boxShadow: "0 0 12px rgba(55,138,221,0.55), inset 0 1px 1px rgba(255,255,255,0.5)",
+                }}
+              />
+              <span className="text-sm font-semibold" style={{ fontFamily: "var(--font-outfit)" }}>
+                ApplyLens
+              </span>
+            </div>
+            <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-outfit)" }}>
+              Suas candidaturas
+            </h1>
           </div>
           <div className="flex items-center gap-3">
             <a
               href="/api/jobs/export"
-              className="inline-block w-fit rounded-md border border-[#2A2D3A] px-4 py-2 text-sm font-medium text-[#C4C7D0] transition-colors hover:border-[#378ADD]/50"
+              className="glass-input inline-block w-fit rounded-xl px-4 py-2 text-sm font-medium text-[#C4C7D0]"
             >
               Exportar CSV
             </a>
             <Link
               href="/nova-vaga"
-              className="inline-block w-fit rounded-md bg-[#378ADD] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#4FA0F0]"
+              className="inline-block w-fit rounded-xl px-4 py-2 text-sm font-semibold text-[#08131F] transition-shadow"
+              style={{
+                background: "linear-gradient(155deg, #85B7EB, #378ADD)",
+                boxShadow: "0 0 0 1px rgba(255,255,255,0.25) inset, 0 8px 20px -8px rgba(55,138,221,0.6)",
+              }}
             >
               + Nova vaga
             </Link>

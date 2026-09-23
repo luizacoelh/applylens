@@ -1,4 +1,5 @@
 import Link from "next/link";
+import GlassPanel from "@/components/ui/Glass";
 
 export default function EmptyState({
   title = "Nenhuma vaga adicionada ainda.",
@@ -10,7 +11,7 @@ export default function EmptyState({
   showCta?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-dashed border-[#2A2D3A] p-12 text-center">
+    <GlassPanel plateClassName="p-12 text-center" hotspots={false}>
       <p className="text-[#C4C7D0]">{title}</p>
       <p className="mt-1 text-sm text-[#7C8494]">{subtitle}</p>
       {showCta && (
@@ -21,6 +22,6 @@ export default function EmptyState({
           + Nova vaga
         </Link>
       )}
-    </div>
+    </GlassPanel>
   );
 }

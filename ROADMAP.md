@@ -12,6 +12,19 @@ Notion.
 
 ## Concluído
 
+### Sprint 9 — Redesign visual "vidro" (em andamento)
+- [x] Sistema de design de vidro/refração criado (`GlassPanel`,
+  `.glass-input`, `.glass-btn`, `.glass-chip` em `app/globals.css`) —
+  detalhes e trade-offs em `ARCHITECTURE.md`
+- [x] Tipografia trocada de Geist para Outfit + Inter
+- [x] Filtro SVG de refração (`#glass-distort`) centralizado em
+  `app/layout.tsx`, reaproveitado por todo elemento de vidro
+- [x] Convertido: Login, Dashboard completo (stats, filtros, busca,
+  cards/tabela de vaga, menu do usuário)
+- [ ] **Pendente**: Nova Vaga, Detalhes da Vaga, Perfil, Admin,
+  Privacidade/Termos, páginas de erro — lista exata em `ARCHITECTURE.md`,
+  seção "Identidade visual — sistema vidro"
+
 ### Sprint 8 — Revisão de segurança/arquitetura + painel admin
 - [x] Corrigido bug visual: "Detalhes da candidatura" aparecia duplicado na
   tela de detalhes da vaga (título repetido entre o `DetailSection` e o

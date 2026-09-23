@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { Job } from "@/types/job";
 import StatusBadge from "@/components/ui/StatusBadge";
+import GlassPanel from "@/components/ui/Glass";
 import { LOCATION_LABELS } from "@/lib/jobLocation";
 
 export default function JobTable({ jobs }: { jobs: Job[] }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-[#2A2D3A]">
+    <GlassPanel plateClassName="overflow-x-auto" hotspots={false}>
       <table className="w-full min-w-[720px] border-collapse text-sm">
         <thead>
-          <tr className="border-b border-[#2A2D3A] bg-[#1A1B23] text-left font-mono text-xs uppercase tracking-wide text-[#7C8494]">
+          <tr className="border-b border-white/10 bg-white/[0.03] text-left font-mono text-xs uppercase tracking-wide text-[#7C8494]">
             <th className="px-4 py-3 font-medium">Empresa</th>
             <th className="px-4 py-3 font-medium">Cargo</th>
             <th className="px-4 py-3 font-medium">Status</th>
@@ -19,10 +20,7 @@ export default function JobTable({ jobs }: { jobs: Job[] }) {
         </thead>
         <tbody>
           {jobs.map((job) => (
-            <tr
-              key={job.id}
-              className="border-b border-[#2A2D3A] last:border-0 hover:bg-[#1A1B23]"
-            >
+            <tr key={job.id} className="border-b border-white/10 last:border-0 hover:bg-white/[0.04]">
               <td className="px-4 py-3">
                 <Link href={`/vaga/${job.id}`} className="block text-[#E4E6EB] hover:text-[#378ADD]">
                   {job.company}
@@ -48,6 +46,6 @@ export default function JobTable({ jobs }: { jobs: Job[] }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </GlassPanel>
   );
 }

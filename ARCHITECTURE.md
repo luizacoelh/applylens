@@ -141,3 +141,72 @@ applylens/
 - **`requireAdmin()` responde 404 pra quem não é admin, não 403** — mesma
   lógica de "não confirmar a existência do recurso" já usada no resto do
   app (ver isolamento por usuário acima).
+
+## Identidade visual — sistema "vidro" (Sprint 9)
+
+Trocada a identidade anterior (terminal, `font-mono` tipo `$ comando`) por
+uma estética de vidro/água com refração de luz real, mantendo a mesma
+paleta de cor (`#378ADD` e derivados) — não foi uma troca de marca, só de
+tratamento visual.
+
+- **`components/ui/Glass.tsx` (`GlassPanel`)** é a peça central: qualquer
+  card/painel do app deveria envolver o conteúdo nele em vez de recriar
+  `bg-[#1A1B23] border rounded-lg` na mão. Três camadas sempre juntas —
+  moldura com gradiente de luz na borda (`.glass-rim`), o vidro em si com
+  blur+distorção (`.glass-surface`), e uma "placa" quase opaca por dentro
+  onde o texto mora (`.glass-plate`). O texto nunca fica direto sobre o
+  vidro transparente — essa é a regra de contraste/acessibilidade do
+  projeto, não negociável mesmo com o visual ficando mais "líquido".
+- **Refração real via filtro SVG**, não só blur decorativo. Um único
+  `<filter id="glass-distort">` (feTurbulence + feDisplacementMap) definido
+  uma vez em `app/layout.tsx`, referenciado por `url(#glass-distort)` no
+  `backdrop-filter` de todo elemento de vidro do app.
+- **Decisão de performance, pedida explicitamente e documentada por ser um
+  trade-off real**: o filtro de distorção é aplicado em TODO elemento de
+  vidro, incluindo elementos pequenos e repetidos (badges de status,
+  chips de tecnologia). Isso é mais caro de renderizar que blur simples,
+  e o custo soma em telas com muitos elementos de vidro simultâneos — a
+  aceitação consciente desse custo, em troca do efeito "iOS Liquid Glass",
+  foi decisão do usuário do projeto, não uma escolha técnica silenciosa.
+  Se algum dispositivo real pesar demais, o ajuste é remover
+  `url(#glass-distort)` de `.glass-chip`/`.glass-input` (elementos
+  pequenos/repetidos), mantendo a distorção só nos painéis grandes.
+- **Compatibilidade Safari/iOS**: `feDisplacementMap` combinado com
+  `backdrop-filter` tem suporte inconsistente no Safari — pode cair para
+  só o blur, sem a distorção. Degrada bem (ainda parece vidro, só sem o
+  efeito de "ondulação"), não quebra.
+- **Tipografia trocada de Geist (Sans/Mono) para Outfit + Inter** — Geist
+  Mono carregava a identidade de terminal que foi abandonada; Outfit
+  (headings, wordmark, botões, labels) tem curvas mais suaves, coerentes
+  com o visual fluido. `--font-mono` no `@theme` continua existindo só por
+  compatibilidade com classes `font-mono` ainda não migradas nos arquivos
+  que esta sprint não tocou — aponta pra Outfit agora, não mais um
+  monoespaçado real, então nada quebra visualmente nesses arquivos.
+- **Wordmark substitui o rótulo de terminal.** O antigo `$ applylens
+  --login` (e variações como `$ applylens --dashboard`) foi trocado por um
+  quadradinho com gradiente + "ApplyLens" — mesmo padrão em toda tela
+  convertida.
+- **`globals.css` deixou de ter modo claro.** O app nunca teve alternância
+  de tema de verdade; o bloco `@media (prefers-color-scheme: dark)` do
+  boilerplate original do `create-next-app` nunca foi removido antes desta
+  sprint, apesar de nunca ter sido usado (o tema escuro sempre vinha de
+  classes Tailwind hardcoded, não das variáveis do `:root`).
+
+### O que foi convertido nesta sprint, e o que falta
+
+Convertido: `app/layout.tsx`, `app/globals.css`, `app/login/page.tsx`,
+`app/page.tsx` (Dashboard) e todos os componentes que ele usa
+(`StatsBar`, `FilterBar`, `JobCard`, `JobTable`, `UserMenu`,
+`StatusBadge`, `TechBadge`, `EmptyState`, `DetailSection`,
+`components/ui/Glass.tsx`).
+
+**Ainda no visual antigo** (`bg-[#1A1B23]`, `border-[#2A2D3A]`, rótulos
+`font-mono` tipo "$ comando"), pendente de conversão numa próxima sprint,
+seguindo exatamente o mesmo padrão (`GlassPanel` + `glass-input` +
+`glass-btn` + wordmark no lugar do rótulo de terminal):
+`app/nova-vaga/page.tsx`, `app/vaga/[id]/page.tsx`, `app/perfil/page.tsx`,
+`app/admin/page.tsx`, `app/privacidade/page.tsx`, `app/termos/page.tsx`,
+`app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx`, e os
+componentes `JobMetaEditor`, `StatusSelect`, `DeleteJobButton`,
+`SkillCompatibility`, `ChecklistItem`, `ProfileForm`, `AppSettingsForm`,
+`UsersTable`.

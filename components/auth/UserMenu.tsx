@@ -10,15 +10,15 @@ export default function UserMenu({ user }: { user: Session["user"] }) {
         <img
           src={user.image}
           alt={user.name ?? "Usuário"}
-          className="h-8 w-8 rounded-full border border-[#2A2D3A]"
+          className="h-8 w-8 rounded-full border border-white/15"
         />
       )}
       <span className="hidden text-sm text-[#C4C7D0] sm:inline">{user.name ?? user.email}</span>
-      <Link href="/perfil" className="font-mono text-xs text-[#7C8494] hover:text-[#378ADD]">
+      <Link href="/perfil" className="font-mono text-xs text-[#7C8494] hover:text-[#85B7EB]">
         Perfil
       </Link>
       {user.isAdmin && (
-        <Link href="/admin" className="font-mono text-xs text-[#7C8494] hover:text-[#378ADD]">
+        <Link href="/admin" className="font-mono text-xs text-[#7C8494] hover:text-[#85B7EB]">
           Admin
         </Link>
       )}

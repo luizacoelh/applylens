@@ -1,6 +1,7 @@
 import { Job } from "@/types/job";
 import { STATUS_LABELS } from "@/lib/jobStatus";
 import { JobStatus } from "@prisma/client";
+import GlassPanel from "@/components/ui/Glass";
 
 function topTechnologies(jobs: Job[], limit = 5): { name: string; count: number }[] {
   const counts = new Map<string, number>();
@@ -31,7 +32,7 @@ export default function StatsBar({ jobs }: { jobs: Job[] }) {
 
   return (
     <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <div className="rounded-lg border border-[#2A2D3A] bg-[#1A1B23] p-4">
+      <GlassPanel plateClassName="p-4">
         <p className="font-mono text-xs text-[#7C8494] uppercase tracking-wide mb-3">
           Funil ({total} {total === 1 ? "vaga" : "vagas"})
         </p>
@@ -43,13 +44,13 @@ export default function StatsBar({ jobs }: { jobs: Job[] }) {
             </div>
           ))}
           <div>
-            <p className="text-xl font-semibold text-[#3FB950]">{conversionRate}%</p>
+            <p className="text-xl font-semibold text-[#4ADE80]">{conversionRate}%</p>
             <p className="text-xs text-[#7C8494]">Taxa de conversão</p>
           </div>
         </div>
-      </div>
+      </GlassPanel>
 
-      <div className="rounded-lg border border-[#2A2D3A] bg-[#1A1B23] p-4">
+      <GlassPanel plateClassName="p-4">
         <p className="font-mono text-xs text-[#7C8494] uppercase tracking-wide mb-3">
           Tecnologias mais pedidas
         </p>
@@ -60,14 +61,14 @@ export default function StatsBar({ jobs }: { jobs: Job[] }) {
             {techs.map(({ name, count }) => (
               <span
                 key={name}
-                className="rounded-full border border-[#378ADD]/40 bg-[#378ADD]/10 px-3 py-1 font-mono text-xs text-[#378ADD]"
+                className="glass-chip rounded-full border border-[#378ADD]/40 bg-[#378ADD]/10 px-3 py-1 font-mono text-xs text-[#378ADD]"
               >
                 {name} · {count}
               </span>
             ))}
           </div>
         )}
-      </div>
+      </GlassPanel>
     </div>
   );
 }

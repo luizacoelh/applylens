@@ -35,13 +35,13 @@ export default function FilterBar({
           value={filters.search}
           onChange={(e) => onChange({ ...filters, search: e.target.value })}
           placeholder="Pesquisar por empresa, cargo ou tecnologia..."
-          className="w-full rounded-md border border-[#2A2D3A] bg-[#1A1B23] px-4 py-2 text-sm text-[#E4E6EB] placeholder:text-[#4B4F5C] focus:outline-none focus:ring-2 focus:ring-[#378ADD] sm:flex-1"
+          className="glass-input w-full rounded-xl px-4 py-2 text-sm text-[#E4E6EB] placeholder:text-[#4B4F5C] sm:flex-1"
         />
 
-        <div className="flex shrink-0 gap-1 rounded-md border border-[#2A2D3A] p-1">
+        <div className="glass-input flex shrink-0 gap-1 rounded-xl p-1">
           <button
             onClick={() => onViewChange("cards")}
-            className={`rounded px-3 py-1 text-xs font-mono transition-colors ${
+            className={`rounded-lg px-3 py-1 text-xs font-mono transition-colors ${
               view === "cards" ? "bg-[#378ADD] text-white" : "text-[#7C8494] hover:text-[#E4E6EB]"
             }`}
           >
@@ -49,7 +49,7 @@ export default function FilterBar({
           </button>
           <button
             onClick={() => onViewChange("table")}
-            className={`rounded px-3 py-1 text-xs font-mono transition-colors ${
+            className={`rounded-lg px-3 py-1 text-xs font-mono transition-colors ${
               view === "table" ? "bg-[#378ADD] text-white" : "text-[#7C8494] hover:text-[#E4E6EB]"
             }`}
           >
@@ -62,7 +62,7 @@ export default function FilterBar({
         <select
           value={filters.status}
           onChange={(e) => onChange({ ...filters, status: e.target.value as FilterState["status"] })}
-          className="rounded-md border border-[#2A2D3A] bg-[#1A1B23] px-3 py-2 text-xs font-mono text-[#C4C7D0] focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+          className="glass-input rounded-xl px-3 py-2 text-xs font-mono text-[#C4C7D0]"
         >
           <option value="TODOS">Todos os status</option>
           {Object.values(JobStatus).map((s) => (
@@ -75,7 +75,7 @@ export default function FilterBar({
         <select
           value={filters.location}
           onChange={(e) => onChange({ ...filters, location: e.target.value as FilterState["location"] })}
-          className="rounded-md border border-[#2A2D3A] bg-[#1A1B23] px-3 py-2 text-xs font-mono text-[#C4C7D0] focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+          className="glass-input rounded-xl px-3 py-2 text-xs font-mono text-[#C4C7D0]"
         >
           <option value="TODOS">Todos os locais</option>
           {Object.values(JobLocation).map((l) => (
@@ -88,7 +88,7 @@ export default function FilterBar({
         <select
           value={filters.tech}
           onChange={(e) => onChange({ ...filters, tech: e.target.value })}
-          className="rounded-md border border-[#2A2D3A] bg-[#1A1B23] px-3 py-2 text-xs font-mono text-[#C4C7D0] focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+          className="glass-input rounded-xl px-3 py-2 text-xs font-mono text-[#C4C7D0]"
         >
           <option value="TODAS">Todas as tecnologias</option>
           {availableTechs.map((tech) => (
@@ -101,7 +101,7 @@ export default function FilterBar({
         {hasActiveFilters && (
           <button
             onClick={() => onChange({ search: "", status: "TODOS", location: "TODOS", tech: "TODAS" })}
-            className="text-xs font-mono text-[#378ADD] hover:text-[#4FA0F0]"
+            className="text-xs font-mono text-[#378ADD] hover:text-[#85B7EB]"
           >
             Limpar filtros
           </button>
