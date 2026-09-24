@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AppSettings } from "@/lib/appSettings";
+import GlassPanel from "@/components/ui/Glass";
 
 export default function AppSettingsForm({ initialSettings }: { initialSettings: AppSettings }) {
   const [dailyAiLimit, setDailyAiLimit] = useState(String(initialSettings.dailyAiLimit));
@@ -36,7 +37,7 @@ export default function AppSettingsForm({ initialSettings }: { initialSettings: 
         return;
       }
 
-      setToast("Configurações salvas — já valem para a próxima chamada, sem precisar de deploy.");
+      setToast("Salvo — já vale para a próxima chamada, sem deploy.");
       setTimeout(() => setToast(null), 4000);
     } catch {
       setError("Falha de conexão.");
@@ -46,69 +47,93 @@ export default function AppSettingsForm({ initialSettings }: { initialSettings: 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-lg border border-[#2A2D3A] bg-[#1A1B23] p-6 space-y-4">
-      <p className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">Limites globais</p>
-
-      {error && (
-        <div className="rounded-md border border-[#E5534B]/40 bg-[#E5534B]/10 px-4 py-3 text-sm text-[#E5534B]">
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div>
-          <label htmlFor="dailyAiLimit" className="text-xs text-[#7C8494]">
-            Análises de IA por usuário/dia
-          </label>
-          <input
-            id="dailyAiLimit"
-            type="number"
-            min={1}
-            value={dailyAiLimit}
-            onChange={(e) => setDailyAiLimit(e.target.value)}
-            className="mt-1 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="ipHourlyLimit" className="text-xs text-[#7C8494]">
-            Análises por IP/hora
-          </label>
-          <input
-            id="ipHourlyLimit"
-            type="number"
-            min={1}
-            value={ipHourlyLimit}
-            onChange={(e) => setIpHourlyLimit(e.target.value)}
-            className="mt-1 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="maxDescriptionLength" className="text-xs text-[#7C8494]">
-            Tamanho máx. da descrição (caracteres)
-          </label>
-          <input
-            id="maxDescriptionLength"
-            type="number"
-            min={100}
-            value={maxDescriptionLength}
-            onChange={(e) => setMaxDescriptionLength(e.target.value)}
-            className="mt-1 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center gap-3 pt-2">
-        <button
-          type="submit"
-          disabled={isSaving}
-          className="rounded-md bg-[#378ADD] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#4FA0F0] disabled:cursor-not-allowed disabled:opacity-50"
+    <GlassPanel plateClassName="p-6">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <p
+          className="text-xs font-medium text-[#7C8494] uppercase tracking-wide"
+          style={{ fontFamily: "var(--font-outfit)" }}
         >
-          {isSaving ? "Salvando..." : "Salvar configurações"}
-        </button>
-        {toast && <span className="font-mono text-xs text-[#3FB950]">{toast}</span>}
-      </div>
-    </form>
+          Limites globais
+        </p>
+
+        {error && (
+          <div className="rounded-xl border border-[#E5534B]/30 bg-[#E5534B]/10 px-4 py-3 text-sm text-[#E5534B]">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div>
+            <label
+              htmlFor="dailyAiLimit"
+              className="block text-xs text-[#7C8494] mb-2"
+              style={{ fontFamily: "var(--font-outfit)" }}
+            >
+              Análises de IA por usuário/dia
+            </label>
+            <input
+              id="dailyAiLimit"
+              type="number"
+              min={1}
+              value={dailyAiLimit}
+              onChange={(e) => setDailyAiLimit(e.target.value)}
+              className="glass-input w-full rounded-xl px-3 py-2.5 text-sm text-[#E4E6EB]"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="ipHourlyLimit"
+              className="block text-xs text-[#7C8494] mb-2"
+              style={{ fontFamily: "var(--font-outfit)" }}
+            >
+              Análises por IP/hora
+            </label>
+            <input
+              id="ipHourlyLimit"
+              type="number"
+              min={1}
+              value={ipHourlyLimit}
+              onChange={(e) => setIpHourlyLimit(e.target.value)}
+              className="glass-input w-full rounded-xl px-3 py-2.5 text-sm text-[#E4E6EB]"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="maxDescriptionLength"
+              className="block text-xs text-[#7C8494] mb-2"
+              style={{ fontFamily: "var(--font-outfit)" }}
+            >
+              Tamanho máx. da descrição (chars)
+            </label>
+            <input
+              id="maxDescriptionLength"
+              type="number"
+              min={100}
+              value={maxDescriptionLength}
+              onChange={(e) => setMaxDescriptionLength(e.target.value)}
+              className="glass-input w-full rounded-xl px-3 py-2.5 text-sm text-[#E4E6EB]"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 pt-1">
+          <button
+            type="submit"
+            disabled={isSaving}
+            className="rounded-xl bg-[#378ADD] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#4FA0F0] disabled:cursor-not-allowed disabled:opacity-50"
+            style={{ fontFamily: "var(--font-outfit)" }}
+          >
+            {isSaving ? "Salvando..." : "Salvar configurações"}
+          </button>
+          {toast && (
+            <span className="text-xs text-[#3FB950]" style={{ fontFamily: "var(--font-outfit)" }}>
+              {toast}
+            </span>
+          )}
+        </div>
+      </form>
+    </GlassPanel>
   );
 }

@@ -29,7 +29,8 @@ export default function DeleteJobButton({ jobId }: { jobId: string }) {
     return (
       <button
         onClick={() => setConfirming(true)}
-        className="font-mono text-xs text-[#7C8494] hover:text-[#E5534B]"
+        className="text-xs text-[#7C8494] hover:text-[#E5534B] transition-colors"
+        style={{ fontFamily: "var(--font-outfit)" }}
       >
         Excluir vaga
       </button>
@@ -37,16 +38,19 @@ export default function DeleteJobButton({ jobId }: { jobId: string }) {
   }
 
   return (
-    <div className="flex items-center gap-2 font-mono text-xs">
+    <div className="flex items-center gap-3 text-xs" style={{ fontFamily: "var(--font-outfit)" }}>
       <span className="text-[#7C8494]">Confirmar exclusão?</span>
       <button
         onClick={handleDelete}
         disabled={isDeleting}
-        className="text-[#E5534B] hover:underline disabled:opacity-50"
+        className="text-[#E5534B] hover:underline disabled:opacity-50 transition-opacity"
       >
         {isDeleting ? "Excluindo..." : "Sim, excluir"}
       </button>
-      <button onClick={() => setConfirming(false)} className="text-[#7C8494] hover:underline">
+      <button
+        onClick={() => setConfirming(false)}
+        className="text-[#7C8494] hover:text-[#C4C7D0] transition-colors"
+      >
         Cancelar
       </button>
     </div>

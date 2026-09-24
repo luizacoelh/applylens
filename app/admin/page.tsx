@@ -36,14 +36,44 @@ export default async function AdminPage() {
   ]);
 
   return (
-    <main className="min-h-screen bg-[#111218] text-[#E4E6EB] px-4 py-16">
+    <main className="min-h-screen text-[#E4E6EB] px-4 py-16">
+      <div className="studio-backdrop">
+        <div className="studio-glow" style={{ width: 500, height: 500, top: -160, left: -140, background: "radial-gradient(circle, rgba(55,138,221,0.45), transparent 70%)" }} />
+        <div className="studio-glow" style={{ width: 400, height: 400, bottom: -140, right: -100, background: "radial-gradient(circle, rgba(133,183,235,0.25), transparent 70%)" }} />
+      </div>
+
       <div className="mx-auto max-w-4xl">
-        <Link href="/" className="font-mono text-sm text-[#378ADD] hover:text-[#4FA0F0]">
+        <Link
+          href="/"
+          className="text-sm text-[#85B7EB] hover:text-[#378ADD]"
+          style={{ fontFamily: "var(--font-outfit)" }}
+        >
           ← Dashboard
         </Link>
 
-        <p className="mt-4 font-mono text-sm text-[#378ADD] mb-1">Admin</p>
-        <h1 className="text-2xl font-semibold mb-8">Configurações e usuários</h1>
+        {/* Wordmark */}
+        <div className="flex items-center gap-2 mt-4 mb-6">
+          <span
+            className="h-[18px] w-[18px] rounded-[6px] shrink-0"
+            style={{
+              background: "linear-gradient(155deg, #85B7EB, #378ADD)",
+              boxShadow: "0 0 10px rgba(55,138,221,0.5), inset 0 1px 1px rgba(255,255,255,0.45)",
+            }}
+          />
+          <span
+            className="text-sm font-semibold text-[#85B7EB]"
+            style={{ fontFamily: "var(--font-outfit)" }}
+          >
+            Admin
+          </span>
+        </div>
+
+        <h1
+          className="text-2xl font-semibold mb-8"
+          style={{ fontFamily: "var(--font-outfit)" }}
+        >
+          Configurações e usuários
+        </h1>
 
         <div className="space-y-6">
           <AppSettingsForm initialSettings={settings} />

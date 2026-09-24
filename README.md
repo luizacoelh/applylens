@@ -98,8 +98,9 @@ Duas decisões estruturais valem registro:
 
 ## Screenshots
 
-_(espaço reservado — adicionar capturas do Dashboard, da tela de análise de
-vaga e do perfil antes de publicar o repositório)_
+![alt text](image.png)
+
+![alt text](image-1.png)
 
 ## Como executar localmente
 

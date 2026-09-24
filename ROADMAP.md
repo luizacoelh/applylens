@@ -12,7 +12,20 @@ Notion.
 
 ## Concluído
 
-### Sprint 9 — Redesign visual "vidro" (em andamento)
+### Sprint 10 — Redesign visual "vidro" — conclusão
+- [x] Convertido: `app/perfil/page.tsx`, `components/profile/ProfileForm.tsx`
+- [x] Convertido: `app/admin/page.tsx`, `components/admin/AppSettingsForm.tsx`,
+  `components/admin/UsersTable.tsx`
+- [x] Convertido: `app/privacidade/page.tsx`, `app/termos/page.tsx`
+- [x] Convertido: `app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx`
+  (`global-error.tsx` declara o filtro SVG inline por não poder depender do
+  `layout.tsx`)
+- [x] Convertido: `components/job/DeleteJobButton.tsx`,
+  `components/job/ChecklistItem.tsx`
+- [x] Identidade visual "vidro" 100% aplicada — nenhum arquivo usa mais
+  `bg-[#1A1B23]`, `border-[#2A2D3A]` ou rótulos `font-mono $ comando`
+
+### Sprint 9 — Redesign visual "vidro" (fase 1)
 - [x] Sistema de design de vidro/refração criado (`GlassPanel`,
   `.glass-input`, `.glass-btn`, `.glass-chip` em `app/globals.css`) —
   detalhes e trade-offs em `ARCHITECTURE.md`
@@ -21,9 +34,6 @@ Notion.
   `app/layout.tsx`, reaproveitado por todo elemento de vidro
 - [x] Convertido: Login, Dashboard completo (stats, filtros, busca,
   cards/tabela de vaga, menu do usuário), Nova Vaga, Detalhes da Vaga
-- [ ] **Pendente**: Perfil, Admin, Privacidade/Termos, páginas de erro —
-  lista exata em `ARCHITECTURE.md`, seção "Identidade visual — sistema
-  vidro"
 
 ### Sprint 8 — Revisão de segurança/arquitetura + painel admin
 - [x] Corrigido bug visual: "Detalhes da candidatura" aparecia duplicado na

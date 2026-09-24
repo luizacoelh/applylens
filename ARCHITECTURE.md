@@ -192,21 +192,25 @@ tratamento visual.
   sprint, apesar de nunca ter sido usado (o tema escuro sempre vinha de
   classes Tailwind hardcoded, não das variáveis do `:root`).
 
-### O que foi convertido nesta sprint, e o que falta
+### O que foi convertido (Sprint 9 + Sprint 10 — completo)
 
-Convertido: `app/layout.tsx`, `app/globals.css`, `app/login/page.tsx`,
+**Sprint 9:** `app/layout.tsx`, `app/globals.css`, `app/login/page.tsx`,
 `app/page.tsx` (Dashboard), `app/nova-vaga/page.tsx`,
 `app/vaga/[id]/page.tsx`, e todos os componentes que essas páginas usam
 (`StatsBar`, `FilterBar`, `JobCard`, `JobTable`, `UserMenu`, `StatusBadge`,
 `TechBadge`, `EmptyState`, `DetailSection`, `StatusSelect`,
 `JobMetaEditor`, `SkillCompatibility`, `components/ui/Glass.tsx`).
 
-**Ainda no visual antigo** (`bg-[#1A1B23]`, `border-[#2A2D3A]`, rótulos
-`font-mono` tipo "$ comando"), pendente de conversão numa próxima sprint,
-seguindo exatamente o mesmo padrão (`GlassPanel` + `glass-input` +
-`glass-btn` + wordmark no lugar do rótulo de terminal):
-`app/perfil/page.tsx`, `app/admin/page.tsx`, `app/privacidade/page.tsx`,
-`app/termos/page.tsx`, `app/not-found.tsx`, `app/error.tsx`,
-`app/global-error.tsx`, e os componentes `DeleteJobButton` (pequeno, baixa
-prioridade), `ChecklistItem` (idem), `ProfileForm`, `AppSettingsForm`,
-`UsersTable`.
+**Sprint 10:** `app/perfil/page.tsx`, `app/admin/page.tsx`,
+`app/privacidade/page.tsx`, `app/termos/page.tsx`, `app/not-found.tsx`,
+`app/error.tsx`, `app/global-error.tsx`, `components/profile/ProfileForm.tsx`,
+`components/admin/AppSettingsForm.tsx`, `components/admin/UsersTable.tsx`,
+`components/job/DeleteJobButton.tsx`, `components/job/ChecklistItem.tsx`.
+
+**Nenhum arquivo usa mais `bg-[#1A1B23]`, `border-[#2A2D3A]` ou rótulos
+`font-mono $ comando`.** A identidade visual "vidro" está 100% aplicada.
+
+**Nota sobre `global-error.tsx`:** esse arquivo substitui o `layout.tsx`
+inteiro quando há um erro crítico no layout raiz — por isso não pode importar
+nem depender de `globals.css`. O filtro SVG `#glass-distort`, os glows e os
+estilos do botão são declarados inline nele.
