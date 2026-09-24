@@ -40,7 +40,7 @@ export default async function PerfilPage({
         {!isOnboarding && (
           <Link
             href="/"
-            className="text-sm text-[#85B7EB] hover:text-[#378ADD]"
+            className="text-sm text-[#85B7EB] hover:text-[#378ADD] transition-colors"
             style={{ fontFamily: "var(--font-outfit)" }}
           >
             ← Dashboard
@@ -60,20 +60,21 @@ export default async function PerfilPage({
             className="text-sm font-semibold text-[#85B7EB]"
             style={{ fontFamily: "var(--font-outfit)" }}
           >
-            {isOnboarding ? "Bem-vindo(a) ao ApplyLens" : "Seu perfil"}
+            ApplyLens
           </span>
         </div>
 
+        {/* Título único — sem redundância */}
         <h1
           className="text-2xl font-semibold mb-2"
           style={{ fontFamily: "var(--font-outfit)" }}
         >
-          {isOnboarding ? "Complete seu perfil pra começar" : "Editar perfil"}
+          {isOnboarding ? "Complete seu perfil pra começar" : "Perfil"}
         </h1>
         <p className="text-sm text-[#7C8494] mb-8">
           {isOnboarding
             ? "Suas skills são usadas para comparar automaticamente com o que cada vaga pede — nada aqui é obrigatório, mas quanto mais completo, melhor a comparação."
-            : "Essas informações são usadas para comparar suas skills com as tecnologias de cada vaga."}
+            : "Suas informações são usadas para comparar suas skills com as tecnologias de cada vaga."}
         </p>
 
         <ProfileForm initialProfile={profile} isOnboarding={isOnboarding} />

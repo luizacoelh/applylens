@@ -12,6 +12,19 @@ Notion.
 
 ## Concluído
 
+### Sprint 11 — Polish de UX pré-produção
+- [x] `app/loading.tsx` refeito: usa `studio-backdrop` + glows + skeletons
+  que espelham o layout real do Dashboard (wordmark, stats, filtros, cards)
+  — elimina o flash de fundo escuro simples entre navegações
+- [x] `UserMenu`: foto + nome viram o link do perfil (hover `bg-white/6`),
+  link "Perfil" redundante removido; "Admin" e "Sair" com `font-outfit` e
+  `transition-colors` no lugar de `font-mono`
+- [x] `app/perfil/page.tsx`: redundância "Seu perfil / Editar perfil"
+  resolvida — título único "Perfil" no modo edição
+- [x] `app/nova-vaga/page.tsx`: label "Nova vaga · Etapa 1/2" removido;
+  labels de formulário padronizados com `font-outfit` (eliminado último
+  `font-mono` restante na página)
+
 ### Sprint 10 — Redesign visual "vidro" — conclusão
 - [x] Convertido: `app/perfil/page.tsx`, `components/profile/ProfileForm.tsx`
 - [x] Convertido: `app/admin/page.tsx`, `components/admin/AppSettingsForm.tsx`,

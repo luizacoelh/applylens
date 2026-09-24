@@ -210,6 +210,12 @@ tratamento visual.
 **Nenhum arquivo usa mais `bg-[#1A1B23]`, `border-[#2A2D3A]` ou rótulos
 `font-mono $ comando`.** A identidade visual "vidro" está 100% aplicada.
 
+**Sprint 11 — polish adicional pós-conversão:** `app/loading.tsx` refatorado
+com skeletons que espelham o layout real do Dashboard; `UserMenu` simplificado
+(foto+nome = link do perfil, link "Perfil" removido); `app/perfil/page.tsx`
+com título único; `app/nova-vaga/page.tsx` sem label de etapa e sem
+`font-mono` residual nos labels de formulário.
+
 **Nota sobre `global-error.tsx`:** esse arquivo substitui o `layout.tsx`
 inteiro quando há um erro crítico no layout raiz — por isso não pode importar
 nem depender de `globals.css`. O filtro SVG `#glass-distort`, os glows e os

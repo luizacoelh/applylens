@@ -139,9 +139,22 @@ export default function NovaVagaPage() {
       </div>
 
       <div className="w-full max-w-2xl">
-        <p className="text-sm text-[#85B7EB] mb-2" style={{ fontFamily: "var(--font-outfit)" }}>
-          Nova vaga · Etapa {step === "input" ? "1" : "2"}/2
-        </p>
+        {/* Wordmark + título — sem label de etapa */}
+        <div className="flex items-center gap-2 mb-2">
+          <span
+            className="h-[18px] w-[18px] rounded-[6px] shrink-0"
+            style={{
+              background: "linear-gradient(155deg, #85B7EB, #378ADD)",
+              boxShadow: "0 0 10px rgba(55,138,221,0.5), inset 0 1px 1px rgba(255,255,255,0.45)",
+            }}
+          />
+          <span
+            className="text-sm font-semibold text-[#85B7EB]"
+            style={{ fontFamily: "var(--font-outfit)" }}
+          >
+            ApplyLens
+          </span>
+        </div>
         <h1 className="text-2xl font-semibold mb-8" style={{ fontFamily: "var(--font-outfit)" }}>
           {step === "input" ? "Adicionar vaga" : "Confirmar análise"}
         </h1>
@@ -154,7 +167,11 @@ export default function NovaVagaPage() {
 
         {step === "input" && (
           <GlassPanel plateClassName="p-6">
-            <label htmlFor="description" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
+            <label
+              htmlFor="description"
+              className="block text-xs font-medium text-[#7C8494] uppercase tracking-wide mb-2"
+              style={{ fontFamily: "var(--font-outfit)" }}
+            >
               Descrição da vaga
             </label>
             <textarea
@@ -189,31 +206,43 @@ export default function NovaVagaPage() {
           <div className="space-y-4">
             <GlassPanel plateClassName="p-6 space-y-4">
               <div>
-                <label htmlFor="company" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
+                <label
+                  htmlFor="company"
+                  className="block text-xs font-medium text-[#7C8494] uppercase tracking-wide mb-2"
+                  style={{ fontFamily: "var(--font-outfit)" }}
+                >
                   Empresa
                 </label>
                 <input
                   id="company"
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
-                  className="glass-input mt-2 w-full rounded-xl px-4 py-2 text-sm"
+                  className="glass-input w-full rounded-xl px-4 py-2.5 text-sm text-[#E4E6EB]"
                 />
               </div>
 
               <div>
-                <label htmlFor="title" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
+                <label
+                  htmlFor="title"
+                  className="block text-xs font-medium text-[#7C8494] uppercase tracking-wide mb-2"
+                  style={{ fontFamily: "var(--font-outfit)" }}
+                >
                   Cargo
                 </label>
                 <input
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="glass-input mt-2 w-full rounded-xl px-4 py-2 text-sm"
+                  className="glass-input w-full rounded-xl px-4 py-2.5 text-sm text-[#E4E6EB]"
                 />
               </div>
 
               <div>
-                <label htmlFor="summary" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
+                <label
+                  htmlFor="summary"
+                  className="block text-xs font-medium text-[#7C8494] uppercase tracking-wide mb-2"
+                  style={{ fontFamily: "var(--font-outfit)" }}
+                >
                   Resumo
                 </label>
                 <textarea
@@ -221,12 +250,16 @@ export default function NovaVagaPage() {
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
                   rows={4}
-                  className="glass-input mt-2 w-full rounded-xl px-4 py-2 text-sm text-[#C4C7D0] leading-relaxed resize-none"
+                  className="glass-input w-full rounded-xl px-4 py-2.5 text-sm text-[#C4C7D0] leading-relaxed resize-none"
                 />
               </div>
 
               <div>
-                <label htmlFor="url" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
+                <label
+                  htmlFor="url"
+                  className="block text-xs font-medium text-[#7C8494] uppercase tracking-wide mb-2"
+                  style={{ fontFamily: "var(--font-outfit)" }}
+                >
                   Link da vaga (opcional)
                 </label>
                 <input
@@ -234,20 +267,24 @@ export default function NovaVagaPage() {
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://..."
-                  className="glass-input mt-2 w-full rounded-xl px-4 py-2 text-sm"
+                  className="glass-input w-full rounded-xl px-4 py-2.5 text-sm text-[#E4E6EB] placeholder:text-[#4B4F5C]"
                 />
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
-                  <label htmlFor="location" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
+                  <label
+                    htmlFor="location"
+                    className="block text-xs font-medium text-[#7C8494] uppercase tracking-wide mb-2"
+                    style={{ fontFamily: "var(--font-outfit)" }}
+                  >
                     Local
                   </label>
                   <select
                     id="location"
                     value={location}
                     onChange={(e) => setLocation(e.target.value as JobLocation)}
-                    className="glass-input mt-2 w-full rounded-xl px-3 py-2 text-sm"
+                    className="glass-input w-full rounded-xl px-3 py-2.5 text-sm text-[#E4E6EB]"
                   >
                     {Object.entries(LOCATION_LABELS).map(([value, label]) => (
                       <option key={value} value={value}>
@@ -258,7 +295,11 @@ export default function NovaVagaPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="salary" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
+                  <label
+                    htmlFor="salary"
+                    className="block text-xs font-medium text-[#7C8494] uppercase tracking-wide mb-2"
+                    style={{ fontFamily: "var(--font-outfit)" }}
+                  >
                     Salário
                   </label>
                   <input
@@ -266,12 +307,16 @@ export default function NovaVagaPage() {
                     value={salary}
                     onChange={(e) => setSalary(e.target.value)}
                     placeholder="Não informado"
-                    className="glass-input mt-2 w-full rounded-xl px-3 py-2 text-sm"
+                    className="glass-input w-full rounded-xl px-3 py-2.5 text-sm text-[#E4E6EB] placeholder:text-[#4B4F5C]"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="appliedAt" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
+                  <label
+                    htmlFor="appliedAt"
+                    className="block text-xs font-medium text-[#7C8494] uppercase tracking-wide mb-2"
+                    style={{ fontFamily: "var(--font-outfit)" }}
+                  >
                     Data da candidatura
                   </label>
                   <input
@@ -279,7 +324,7 @@ export default function NovaVagaPage() {
                     type="date"
                     value={appliedAt}
                     onChange={(e) => setAppliedAt(e.target.value)}
-                    className="glass-input mt-2 w-full rounded-xl px-3 py-2 text-sm"
+                    className="glass-input w-full rounded-xl px-3 py-2.5 text-sm text-[#E4E6EB]"
                   />
                 </div>
               </div>
