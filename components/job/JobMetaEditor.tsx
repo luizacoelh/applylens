@@ -6,6 +6,11 @@ import { JobLocation } from "@prisma/client";
 import { LOCATION_LABELS } from "@/lib/jobLocation";
 import { UpdateJobRequest } from "@/types/job";
 
+// Sem wrapper de card próprio — vive dentro do GlassPanel compartilhado da
+// página de detalhes (app/vaga/[id]/page.tsx), junto com as outras seções.
+// Antes tinha um card + título embutido próprios, o que causava o bug de
+// "Detalhes da candidatura" duplicado (o DetailSection por fora já mostra
+// o título) — corrigido nesta sprint junto com o resto do visual.
 export default function JobMetaEditor({
   jobId,
   initialUrl,
@@ -62,7 +67,7 @@ export default function JobMetaEditor({
   }
 
   return (
-    <div className="rounded-lg border border-[#2A2D3A] bg-[#1A1B23] p-5 space-y-4">
+    <div className="space-y-4">
       <div>
         <label htmlFor="url" className="text-xs text-[#7C8494]">
           Link da vaga
@@ -72,7 +77,7 @@ export default function JobMetaEditor({
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://..."
-          className="mt-1 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+          className="glass-input mt-1 w-full rounded-xl px-3 py-2 text-sm"
         />
       </div>
 
@@ -85,7 +90,7 @@ export default function JobMetaEditor({
             id="location"
             value={location}
             onChange={(e) => setLocation(e.target.value as JobLocation)}
-            className="mt-1 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+            className="glass-input mt-1 w-full rounded-xl px-3 py-2 text-sm"
           >
             {Object.values(JobLocation).map((l) => (
               <option key={l} value={l}>
@@ -104,7 +109,7 @@ export default function JobMetaEditor({
             value={salary}
             onChange={(e) => setSalary(e.target.value)}
             placeholder="Não informado"
-            className="mt-1 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+            className="glass-input mt-1 w-full rounded-xl px-3 py-2 text-sm"
           />
         </div>
 
@@ -117,7 +122,7 @@ export default function JobMetaEditor({
             type="date"
             value={appliedAt}
             onChange={(e) => setAppliedAt(e.target.value)}
-            className="mt-1 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+            className="glass-input mt-1 w-full rounded-xl px-3 py-2 text-sm"
           />
         </div>
       </div>
@@ -126,11 +131,16 @@ export default function JobMetaEditor({
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="rounded-md bg-[#378ADD] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#4FA0F0] disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl px-4 py-2 text-sm font-medium text-[#08131F] transition-shadow disabled:cursor-not-allowed disabled:opacity-50"
+          style={{
+            fontFamily: "var(--font-outfit)",
+            background: "linear-gradient(155deg, #85B7EB, #378ADD)",
+            boxShadow: "0 0 0 1px rgba(255,255,255,0.25) inset, 0 8px 20px -8px rgba(55,138,221,0.6)",
+          }}
         >
           {isSaving ? "Salvando..." : "Salvar detalhes"}
         </button>
-        {toast && <span className="font-mono text-xs text-[#378ADD]">{toast}</span>}
+        {toast && <span className="font-mono text-xs text-[#85B7EB]">{toast}</span>}
       </div>
     </div>
   );

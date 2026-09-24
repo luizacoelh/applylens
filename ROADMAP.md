@@ -20,10 +20,10 @@ Notion.
 - [x] Filtro SVG de refração (`#glass-distort`) centralizado em
   `app/layout.tsx`, reaproveitado por todo elemento de vidro
 - [x] Convertido: Login, Dashboard completo (stats, filtros, busca,
-  cards/tabela de vaga, menu do usuário)
-- [ ] **Pendente**: Nova Vaga, Detalhes da Vaga, Perfil, Admin,
-  Privacidade/Termos, páginas de erro — lista exata em `ARCHITECTURE.md`,
-  seção "Identidade visual — sistema vidro"
+  cards/tabela de vaga, menu do usuário), Nova Vaga, Detalhes da Vaga
+- [ ] **Pendente**: Perfil, Admin, Privacidade/Termos, páginas de erro —
+  lista exata em `ARCHITECTURE.md`, seção "Identidade visual — sistema
+  vidro"
 
 ### Sprint 8 — Revisão de segurança/arquitetura + painel admin
 - [x] Corrigido bug visual: "Detalhes da candidatura" aparecia duplicado na

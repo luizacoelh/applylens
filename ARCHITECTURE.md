@@ -195,18 +195,18 @@ tratamento visual.
 ### O que foi convertido nesta sprint, e o que falta
 
 Convertido: `app/layout.tsx`, `app/globals.css`, `app/login/page.tsx`,
-`app/page.tsx` (Dashboard) e todos os componentes que ele usa
-(`StatsBar`, `FilterBar`, `JobCard`, `JobTable`, `UserMenu`,
-`StatusBadge`, `TechBadge`, `EmptyState`, `DetailSection`,
-`components/ui/Glass.tsx`).
+`app/page.tsx` (Dashboard), `app/nova-vaga/page.tsx`,
+`app/vaga/[id]/page.tsx`, e todos os componentes que essas páginas usam
+(`StatsBar`, `FilterBar`, `JobCard`, `JobTable`, `UserMenu`, `StatusBadge`,
+`TechBadge`, `EmptyState`, `DetailSection`, `StatusSelect`,
+`JobMetaEditor`, `SkillCompatibility`, `components/ui/Glass.tsx`).
 
 **Ainda no visual antigo** (`bg-[#1A1B23]`, `border-[#2A2D3A]`, rótulos
 `font-mono` tipo "$ comando"), pendente de conversão numa próxima sprint,
 seguindo exatamente o mesmo padrão (`GlassPanel` + `glass-input` +
 `glass-btn` + wordmark no lugar do rótulo de terminal):
-`app/nova-vaga/page.tsx`, `app/vaga/[id]/page.tsx`, `app/perfil/page.tsx`,
-`app/admin/page.tsx`, `app/privacidade/page.tsx`, `app/termos/page.tsx`,
-`app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx`, e os
-componentes `JobMetaEditor`, `StatusSelect`, `DeleteJobButton`,
-`SkillCompatibility`, `ChecklistItem`, `ProfileForm`, `AppSettingsForm`,
+`app/perfil/page.tsx`, `app/admin/page.tsx`, `app/privacidade/page.tsx`,
+`app/termos/page.tsx`, `app/not-found.tsx`, `app/error.tsx`,
+`app/global-error.tsx`, e os componentes `DeleteJobButton` (pequeno, baixa
+prioridade), `ChecklistItem` (idem), `ProfileForm`, `AppSettingsForm`,
 `UsersTable`.

@@ -178,6 +178,17 @@ body {
   box-shadow: 0 0 0 2px rgba(55, 138, 219, 0.35);
 }
 
+/* O <select> em si pega o estilo de .glass-input, mas a LISTA de opções
+   (o popup nativo do navegador) não herda isso — sem regra explícita nos
+   <option>, o navegador desenha com o tema padrão do sistema (fundo
+   branco). Funciona em Chrome/Edge/Firefox; navegadores móveis nativos
+   (Safari iOS, WebView Android) costuram ignorar isso e usar o picker do
+   próprio sistema — degrada pra aparência nativa, não quebra. */
+select.glass-input option {
+  background-color: #12151b;
+  color: #f2f4f7;
+}
+
 /* Botão "outline" translúcido — usado nos botões de login OAuth e outras
    ações secundárias. Levanta e ganha um brilho azul sutil no hover. */
 .glass-btn {

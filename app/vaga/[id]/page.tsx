@@ -11,6 +11,7 @@ import TechBadge from "@/components/ui/TechBadge";
 import ChecklistItem from "@/components/job/ChecklistItem";
 import SkillCompatibility from "@/components/job/SkillCompatibility";
 import DeleteJobButton from "@/components/job/DeleteJobButton";
+import GlassPanel from "@/components/ui/Glass";
 import { LOCATION_LABELS } from "@/lib/jobLocation";
 
 export default async function VagaDetalhesPage({
@@ -44,17 +45,22 @@ export default async function VagaDetalhesPage({
   const userSkills = parseArray(profile?.skills);
 
   return (
-    <main className="min-h-screen bg-[#111218] text-[#E4E6EB] px-4 py-16">
+    <main className="min-h-screen text-[#E4E6EB] px-4 py-16">
+      <div className="studio-backdrop">
+        <div className="studio-glow" style={{ width: 480, height: 480, top: -140, left: -120, background: "radial-gradient(circle, rgba(55,138,221,0.5), transparent 70%)" }} />
+        <div className="studio-glow" style={{ width: 420, height: 420, bottom: -160, right: -100, background: "radial-gradient(circle, rgba(133,183,235,0.3), transparent 70%)" }} />
+      </div>
+
       <div className="mx-auto max-w-2xl">
         <div className="flex items-center justify-between">
-          <Link href="/" className="font-mono text-sm text-[#378ADD] hover:text-[#4FA0F0]">
+          <Link href="/" className="text-sm text-[#85B7EB] hover:text-[#378ADD]" style={{ fontFamily: "var(--font-outfit)" }}>
             ← Dashboard
           </Link>
           <DeleteJobButton jobId={job.id} />
         </div>
 
         {created === "true" && (
-          <div className="mt-4 rounded-md border border-[#3FB950]/40 bg-[#3FB950]/10 px-4 py-3 text-sm text-[#3FB950]">
+          <div className="mt-4 rounded-xl border border-[#4ADE80]/40 bg-[#4ADE80]/10 px-4 py-3 text-sm text-[#4ADE80]">
             ✔ Vaga salva com sucesso.
           </div>
         )}
@@ -62,13 +68,15 @@ export default async function VagaDetalhesPage({
         <div className="mt-6 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="font-mono text-sm text-[#7C8494] uppercase tracking-wide">{job.company}</p>
-            <h1 className="mt-1 text-2xl font-semibold">{job.title}</h1>
+            <h1 className="mt-1 text-2xl font-semibold" style={{ fontFamily: "var(--font-outfit)" }}>
+              {job.title}
+            </h1>
             {job.url && (
               <a
                 href={job.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-1 inline-block text-xs text-[#378ADD] hover:text-[#4FA0F0] break-all"
+                className="mt-1 inline-block text-xs text-[#85B7EB] hover:text-[#378ADD] break-all"
               >
                 {job.url} ↗
               </a>
@@ -81,7 +89,7 @@ export default async function VagaDetalhesPage({
           <StatusSelect jobId={job.id} initialStatus={job.status} />
         </div>
 
-        <div className="mt-8 space-y-6">
+        <GlassPanel className="mt-8" plateClassName="p-6 space-y-6">
           {job.summary && (
             <DetailSection label="Resumo">
               <p className="text-sm text-[#C4C7D0] leading-relaxed">{job.summary}</p>
@@ -149,7 +157,7 @@ export default async function VagaDetalhesPage({
               initialAppliedAt={job.appliedAt}
             />
           </DetailSection>
-        </div>
+        </GlassPanel>
       </div>
     </main>
   );

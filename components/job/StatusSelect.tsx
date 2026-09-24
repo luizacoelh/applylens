@@ -47,7 +47,7 @@ export default function StatusSelect({ jobId, initialStatus }: { jobId: string; 
         value={status}
         disabled={isUpdating}
         onChange={(e) => handleChange(e.target.value as JobStatus)}
-        className="rounded-md border border-[#2A2D3A] bg-[#1A1B23] px-3 py-2 text-sm font-mono text-[#E4E6EB] focus:outline-none focus:ring-2 focus:ring-[#378ADD] disabled:opacity-50"
+        className="glass-input rounded-xl px-3 py-2 text-sm font-mono text-[#E4E6EB] disabled:opacity-50"
       >
         {Object.values(JobStatus).map((s) => (
           <option key={s} value={s}>
@@ -57,7 +57,7 @@ export default function StatusSelect({ jobId, initialStatus }: { jobId: string; 
       </select>
 
       {toast && (
-        <p className="absolute left-0 top-full mt-2 whitespace-nowrap font-mono text-xs text-[#378ADD]">
+        <p className="absolute left-0 top-full mt-2 whitespace-nowrap font-mono text-xs text-[#85B7EB]">
           {toast}
         </p>
       )}

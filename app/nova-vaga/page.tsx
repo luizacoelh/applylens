@@ -7,6 +7,7 @@ import { LOCATION_LABELS } from "@/lib/jobLocation";
 import DetailSection from "@/components/ui/DetailSection";
 import TechBadge from "@/components/ui/TechBadge";
 import ChecklistItem from "@/components/job/ChecklistItem";
+import GlassPanel from "@/components/ui/Glass";
 
 type Step = "input" | "preview";
 
@@ -131,23 +132,28 @@ export default function NovaVagaPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#111218] text-[#E4E6EB] flex justify-center px-4 py-16">
+    <main className="min-h-screen text-[#E4E6EB] flex justify-center px-4 py-16">
+      <div className="studio-backdrop">
+        <div className="studio-glow" style={{ width: 480, height: 480, top: -140, left: -120, background: "radial-gradient(circle, rgba(55,138,221,0.5), transparent 70%)" }} />
+        <div className="studio-glow" style={{ width: 420, height: 420, bottom: -160, right: -100, background: "radial-gradient(circle, rgba(133,183,235,0.3), transparent 70%)" }} />
+      </div>
+
       <div className="w-full max-w-2xl">
-        <p className="font-mono text-sm text-[#378ADD] mb-2">
+        <p className="text-sm text-[#85B7EB] mb-2" style={{ fontFamily: "var(--font-outfit)" }}>
           Nova vaga · Etapa {step === "input" ? "1" : "2"}/2
         </p>
-        <h1 className="text-2xl font-semibold mb-8">
+        <h1 className="text-2xl font-semibold mb-8" style={{ fontFamily: "var(--font-outfit)" }}>
           {step === "input" ? "Adicionar vaga" : "Confirmar análise"}
         </h1>
 
         {error && (
-          <div className="mb-6 rounded-md border border-[#E5534B]/40 bg-[#E5534B]/10 px-4 py-3 text-sm text-[#E5534B]">
+          <div className="mb-6 rounded-xl border border-[#E5534B]/40 bg-[#E5534B]/10 px-4 py-3 text-sm text-[#E5534B]">
             {error}
           </div>
         )}
 
         {step === "input" && (
-          <div className="rounded-lg border border-[#2A2D3A] bg-[#1A1B23] p-6">
+          <GlassPanel plateClassName="p-6">
             <label htmlFor="description" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
               Descrição da vaga
             </label>
@@ -158,7 +164,7 @@ export default function NovaVagaPage() {
               placeholder="Cole aqui o texto completo da vaga..."
               rows={12}
               maxLength={MAX_DESCRIPTION_LENGTH}
-              className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-4 py-3 text-sm text-[#E4E6EB] placeholder:text-[#4B4F5C] focus:outline-none focus:ring-2 focus:ring-[#378ADD] resize-none"
+              className="glass-input mt-2 w-full rounded-xl px-4 py-3 text-sm text-[#E4E6EB] placeholder:text-[#4B4F5C] resize-none"
             />
             <p className="mt-1 text-right text-xs text-[#7C8494]">
               {description.length}/{MAX_DESCRIPTION_LENGTH}
@@ -167,16 +173,21 @@ export default function NovaVagaPage() {
             <button
               onClick={handleAnalyze}
               disabled={isAnalyzing}
-              className="mt-4 w-full rounded-md bg-[#378ADD] py-3 font-medium text-white transition-colors hover:bg-[#4FA0F0] disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-4 w-full rounded-xl py-3 font-medium text-[#08131F] transition-shadow disabled:cursor-not-allowed disabled:opacity-50"
+              style={{
+                fontFamily: "var(--font-outfit)",
+                background: "linear-gradient(155deg, #85B7EB, #378ADD)",
+                boxShadow: "0 0 0 1px rgba(255,255,255,0.25) inset, 0 8px 20px -8px rgba(55,138,221,0.6)",
+              }}
             >
               {isAnalyzing ? "Analisando..." : "Analisar"}
             </button>
-          </div>
+          </GlassPanel>
         )}
 
         {step === "preview" && analysis && (
           <div className="space-y-4">
-            <div className="rounded-lg border border-[#2A2D3A] bg-[#1A1B23] p-6 space-y-4">
+            <GlassPanel plateClassName="p-6 space-y-4">
               <div>
                 <label htmlFor="company" className="font-mono text-xs text-[#7C8494] uppercase tracking-wide">
                   Empresa
@@ -185,7 +196,7 @@ export default function NovaVagaPage() {
                   id="company"
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
-                  className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+                  className="glass-input mt-2 w-full rounded-xl px-4 py-2 text-sm"
                 />
               </div>
 
@@ -197,7 +208,7 @@ export default function NovaVagaPage() {
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+                  className="glass-input mt-2 w-full rounded-xl px-4 py-2 text-sm"
                 />
               </div>
 
@@ -210,7 +221,7 @@ export default function NovaVagaPage() {
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
                   rows={4}
-                  className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-4 py-2 text-sm text-[#C4C7D0] leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#378ADD] resize-none"
+                  className="glass-input mt-2 w-full rounded-xl px-4 py-2 text-sm text-[#C4C7D0] leading-relaxed resize-none"
                 />
               </div>
 
@@ -223,7 +234,7 @@ export default function NovaVagaPage() {
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://..."
-                  className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+                  className="glass-input mt-2 w-full rounded-xl px-4 py-2 text-sm"
                 />
               </div>
 
@@ -236,7 +247,7 @@ export default function NovaVagaPage() {
                     id="location"
                     value={location}
                     onChange={(e) => setLocation(e.target.value as JobLocation)}
-                    className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+                    className="glass-input mt-2 w-full rounded-xl px-3 py-2 text-sm"
                   >
                     {Object.entries(LOCATION_LABELS).map(([value, label]) => (
                       <option key={value} value={value}>
@@ -255,7 +266,7 @@ export default function NovaVagaPage() {
                     value={salary}
                     onChange={(e) => setSalary(e.target.value)}
                     placeholder="Não informado"
-                    className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+                    className="glass-input mt-2 w-full rounded-xl px-3 py-2 text-sm"
                   />
                 </div>
 
@@ -268,7 +279,7 @@ export default function NovaVagaPage() {
                     type="date"
                     value={appliedAt}
                     onChange={(e) => setAppliedAt(e.target.value)}
-                    className="mt-2 w-full rounded-md border border-[#2A2D3A] bg-[#111218] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#378ADD]"
+                    className="glass-input mt-2 w-full rounded-xl px-3 py-2 text-sm"
                   />
                 </div>
               </div>
@@ -310,20 +321,26 @@ export default function NovaVagaPage() {
                   ))}
                 </ul>
               </DetailSection>
-            </div>
+            </GlassPanel>
 
             <div className="flex gap-3">
               <button
                 onClick={handleBack}
                 disabled={isSaving}
-                className="flex-1 rounded-md border border-[#2A2D3A] py-3 font-medium text-[#C4C7D0] transition-colors hover:bg-[#1A1B23] disabled:cursor-not-allowed disabled:opacity-50"
+                className="glass-btn flex-1 rounded-xl py-3 font-medium text-[#C4C7D0] disabled:cursor-not-allowed disabled:opacity-50"
+                style={{ fontFamily: "var(--font-outfit)" }}
               >
                 Voltar
               </button>
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="flex-1 rounded-md bg-[#378ADD] py-3 font-medium text-white transition-colors hover:bg-[#4FA0F0] disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 rounded-xl py-3 font-medium text-[#08131F] transition-shadow disabled:cursor-not-allowed disabled:opacity-50"
+                style={{
+                  fontFamily: "var(--font-outfit)",
+                  background: "linear-gradient(155deg, #85B7EB, #378ADD)",
+                  boxShadow: "0 0 0 1px rgba(255,255,255,0.25) inset, 0 8px 20px -8px rgba(55,138,221,0.6)",
+                }}
               >
                 {isSaving ? "Salvando..." : "Salvar vaga"}
               </button>

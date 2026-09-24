@@ -58,11 +58,11 @@ export default function FilterBar({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
         <select
           value={filters.status}
           onChange={(e) => onChange({ ...filters, status: e.target.value as FilterState["status"] })}
-          className="glass-input rounded-xl px-3 py-2 text-xs font-mono text-[#C4C7D0]"
+          className="glass-input w-full rounded-xl px-3 py-2 text-xs font-mono text-[#C4C7D0] sm:w-auto"
         >
           <option value="TODOS">Todos os status</option>
           {Object.values(JobStatus).map((s) => (
@@ -75,7 +75,7 @@ export default function FilterBar({
         <select
           value={filters.location}
           onChange={(e) => onChange({ ...filters, location: e.target.value as FilterState["location"] })}
-          className="glass-input rounded-xl px-3 py-2 text-xs font-mono text-[#C4C7D0]"
+          className="glass-input w-full rounded-xl px-3 py-2 text-xs font-mono text-[#C4C7D0] sm:w-auto"
         >
           <option value="TODOS">Todos os locais</option>
           {Object.values(JobLocation).map((l) => (
@@ -88,7 +88,7 @@ export default function FilterBar({
         <select
           value={filters.tech}
           onChange={(e) => onChange({ ...filters, tech: e.target.value })}
-          className="glass-input rounded-xl px-3 py-2 text-xs font-mono text-[#C4C7D0]"
+          className="glass-input col-span-2 w-full rounded-xl px-3 py-2 text-xs font-mono text-[#C4C7D0] sm:w-auto"
         >
           <option value="TODAS">Todas as tecnologias</option>
           {availableTechs.map((tech) => (
@@ -101,7 +101,7 @@ export default function FilterBar({
         {hasActiveFilters && (
           <button
             onClick={() => onChange({ search: "", status: "TODOS", location: "TODOS", tech: "TODAS" })}
-            className="text-xs font-mono text-[#378ADD] hover:text-[#85B7EB]"
+            className="col-span-2 text-xs font-mono text-[#378ADD] hover:text-[#85B7EB] sm:col-span-1"
           >
             Limpar filtros
           </button>
