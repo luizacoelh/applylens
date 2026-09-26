@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getAppSettings } from "@/lib/appSettings";
 import AppSettingsForm from "@/components/admin/AppSettingsForm";
 import UsersTable from "@/components/admin/UsersTable";
+import BackButton from "@/components/ui/BackButton";
 
 export default async function AdminPage() {
   const session = await auth();
@@ -12,8 +12,6 @@ export default async function AdminPage() {
     redirect("/login");
   }
 
-  // Mesma regra do resto do app: quem não tem acesso recebe "não
-  // encontrado", não "sem permissão" — não confirma que a rota existe.
   if (!session.user.isAdmin) {
     notFound();
   }
@@ -43,13 +41,7 @@ export default async function AdminPage() {
       </div>
 
       <div className="mx-auto max-w-4xl">
-        <Link
-          href="/"
-          className="text-sm text-[#85B7EB] hover:text-[#378ADD]"
-          style={{ fontFamily: "var(--font-outfit)" }}
-        >
-          ← Dashboard
-        </Link>
+        <BackButton href="/" />
 
         {/* Wordmark */}
         <div className="flex items-center gap-2 mt-4 mb-6">
@@ -68,10 +60,7 @@ export default async function AdminPage() {
           </span>
         </div>
 
-        <h1
-          className="text-2xl font-semibold mb-8"
-          style={{ fontFamily: "var(--font-outfit)" }}
-        >
+        <h1 className="text-2xl font-semibold mb-8" style={{ fontFamily: "var(--font-outfit)" }}>
           Configurações e usuários
         </h1>
 

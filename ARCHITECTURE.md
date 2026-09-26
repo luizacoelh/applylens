@@ -210,6 +210,20 @@ tratamento visual.
 **Nenhum arquivo usa mais `bg-[#1A1B23]`, `border-[#2A2D3A]` ou rótulos
 `font-mono $ comando`.** A identidade visual "vidro" está 100% aplicada.
 
+**Sprint 14 — correção de bug:** o `NewJobFab` quebrava o render de páginas
+de vaga porque tentava ler o header `x-pathname` que ainda não havia sido
+injetado pelo `proxy.ts`. Corrigido adicionando a injeção no `proxy.ts` e
+um `try/catch` no componente para degradar graciosamente caso o header não
+exista (ex: builds estáticos ou testes).
+
+**Sprint 12 — performance:** `.glass-chip`, `.glass-input` e `.glass-btn`
+trocados de `blur + saturate + url(#glass-distort)` para apenas
+`blur + saturate`. O filtro SVG de distorção foi mantido exclusivamente
+em `.glass-surface` (painéis grandes). Impacto: telas com muitos badges ou
+inputs (detalhes de vaga, formulários) deixam de recalcular pixels fora do
+elemento a cada frame nessas instâncias pequenas. `will-change: transform`
+adicionado em `.glass-rim` para promoção de camada GPU durante scroll.
+
 **Sprint 11 — polish adicional pós-conversão:** `app/loading.tsx` refatorado
 com skeletons que espelham o layout real do Dashboard; `UserMenu` simplificado
 (foto+nome = link do perfil, link "Perfil" removido); `app/perfil/page.tsx`

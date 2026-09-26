@@ -33,8 +33,8 @@ export default function StatsBar({ jobs }: { jobs: Job[] }) {
   return (
     <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
       <GlassPanel plateClassName="p-4">
-        <p className="font-mono text-xs text-[#7C8494] uppercase tracking-wide mb-3">
-          Funil ({total} {total === 1 ? "vaga" : "vagas"})
+        <p className="text-xs font-medium text-[#7C8494] uppercase tracking-wide mb-3" style={{ fontFamily: "var(--font-outfit)" }}>
+          {total} {total === 1 ? "vaga" : "vagas"}
         </p>
         <div className="flex flex-wrap gap-4">
           {statusCounts.map(({ status, count }) => (
@@ -50,8 +50,8 @@ export default function StatsBar({ jobs }: { jobs: Job[] }) {
         </div>
       </GlassPanel>
 
-      <GlassPanel plateClassName="p-4">
-        <p className="font-mono text-xs text-[#7C8494] uppercase tracking-wide mb-3">
+      <GlassPanel plateClassName="p-4" hotspots={false}>
+        <p className="text-xs font-medium text-[#7C8494] uppercase tracking-wide mb-3" style={{ fontFamily: "var(--font-outfit)" }}>
           Tecnologias mais pedidas
         </p>
         {techs.length === 0 ? (
@@ -61,7 +61,8 @@ export default function StatsBar({ jobs }: { jobs: Job[] }) {
             {techs.map(({ name, count }) => (
               <span
                 key={name}
-                className="glass-chip rounded-full border border-[#378ADD]/40 bg-[#378ADD]/10 px-3 py-1 font-mono text-xs text-[#378ADD]"
+                className="glass-chip rounded-full border border-[#378ADD]/40 bg-[#378ADD]/10 px-3 py-1 text-xs text-[#378ADD]"
+                style={{ fontFamily: "var(--font-outfit)" }}
               >
                 {name} · {count}
               </span>

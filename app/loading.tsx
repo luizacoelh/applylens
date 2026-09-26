@@ -25,53 +25,68 @@ export default function Loading() {
       </div>
 
       <div className="mx-auto max-w-5xl animate-pulse">
-        {/* Header skeleton — espelha o layout do Dashboard */}
-        <div className="mb-8 flex items-center justify-between">
+        {/*
+          Header — espelha exatamente o layout do Dashboard (app/page.tsx):
+          flex-col gap-4 em mobile, flex-row em sm+.
+          O desnívelamento anterior acontecia porque o skeleton usava
+          flex-row fixo enquanto o dashboard real usa flex-col em mobile.
+        */}
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* Lado esquerdo: wordmark + título */}
           <div className="space-y-2">
-            {/* Wordmark */}
             <div className="flex items-center gap-2">
               <div
-                className="h-[22px] w-[22px] rounded-[7px]"
+                className="h-[22px] w-[22px] shrink-0 rounded-[7px]"
                 style={{
-                  background: "linear-gradient(155deg, rgba(133,183,235,0.3), rgba(55,138,221,0.3))",
+                  background: "linear-gradient(155deg, rgba(133,183,235,0.25), rgba(55,138,221,0.25))",
                 }}
               />
-              <div className="h-4 w-20 rounded-lg bg-white/8" />
+              <div className="h-4 w-24 rounded-lg bg-white/8" />
             </div>
-            <div className="h-7 w-48 rounded-lg bg-white/8" />
+            <div className="h-7 w-44 rounded-lg bg-white/8" />
           </div>
+
+          {/* Lado direito: ações + avatar */}
           <div className="flex items-center gap-3">
-            <div className="h-9 w-24 rounded-xl bg-white/6" />
-            <div className="h-9 w-28 rounded-xl bg-white/10" />
-            {/* Avatar skeleton */}
-            <div className="h-8 w-8 rounded-full bg-white/8" />
+            <div className="h-9 w-28 rounded-xl bg-white/6" />
+            <div
+              className="h-9 w-32 rounded-xl"
+              style={{
+                background: "linear-gradient(155deg, rgba(133,183,235,0.2), rgba(55,138,221,0.2))",
+              }}
+            />
+            {/* Avatar */}
+            <div className="h-8 w-8 shrink-0 rounded-full bg-white/8" />
           </div>
         </div>
 
-        {/* Stats bar skeleton */}
-        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
+        {/* Stats bar — 1 col mobile, 2 col sm+ (igual ao StatsBar real) */}
+        <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {[1, 2].map((i) => (
             <div
               key={i}
-              className="h-16 rounded-2xl"
-              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)" }}
+              className="h-24 rounded-[22px]"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.07)",
+              }}
             />
           ))}
         </div>
 
-        {/* Filter bar skeleton */}
-        <div className="mb-5 flex gap-2">
+        {/* Filter bar */}
+        <div className="mb-5 flex flex-wrap gap-2">
           <div className="h-9 w-48 rounded-xl bg-white/6" />
           <div className="h-9 w-28 rounded-xl bg-white/6" />
           <div className="h-9 w-28 rounded-xl bg-white/6" />
         </div>
 
-        {/* Cards skeleton */}
+        {/* Job cards */}
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-24 rounded-2xl"
+              className="h-24 rounded-[22px]"
               style={{
                 background: "rgba(255,255,255,0.04)",
                 border: "1px solid rgba(255,255,255,0.07)",

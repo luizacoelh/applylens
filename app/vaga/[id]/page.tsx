@@ -12,6 +12,7 @@ import ChecklistItem from "@/components/job/ChecklistItem";
 import SkillCompatibility from "@/components/job/SkillCompatibility";
 import DeleteJobButton from "@/components/job/DeleteJobButton";
 import GlassPanel from "@/components/ui/Glass";
+import BackButton from "@/components/ui/BackButton";
 import { LOCATION_LABELS } from "@/lib/jobLocation";
 
 export default async function VagaDetalhesPage({
@@ -30,14 +31,10 @@ export default async function VagaDetalhesPage({
   const { created } = await searchParams;
 
   const rawJob = await prisma.job.findUnique({ where: { id } });
-  // 404 tanto se a vaga não existe quanto se pertence a outro usuário — não
-  // revelamos a existência de vagas de terceiros.
   if (!rawJob || rawJob.userId !== session.user.id) notFound();
 
   const job = mapJob(rawJob);
 
-  // Skills do usuário logado, pra comparação — sempre do dono da sessão
-  // atual, nunca de outro usuário (mesma regra de isolamento do resto do app).
   const profile = await prisma.userProfile.findUnique({
     where: { userId: session.user.id },
     select: { skills: true },
@@ -53,9 +50,7 @@ export default async function VagaDetalhesPage({
 
       <div className="mx-auto max-w-2xl">
         <div className="flex items-center justify-between">
-          <Link href="/" className="text-sm text-[#85B7EB] hover:text-[#378ADD]" style={{ fontFamily: "var(--font-outfit)" }}>
-            ← Dashboard
-          </Link>
+          <BackButton href="/" />
           <DeleteJobButton jobId={job.id} />
         </div>
 

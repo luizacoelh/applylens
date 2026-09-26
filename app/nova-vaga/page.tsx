@@ -8,6 +8,7 @@ import DetailSection from "@/components/ui/DetailSection";
 import TechBadge from "@/components/ui/TechBadge";
 import ChecklistItem from "@/components/job/ChecklistItem";
 import GlassPanel from "@/components/ui/Glass";
+import BackButton from "@/components/ui/BackButton";
 
 type Step = "input" | "preview";
 
@@ -139,6 +140,10 @@ export default function NovaVagaPage() {
       </div>
 
       <div className="w-full max-w-2xl">
+        <div className="mb-4">
+          <BackButton href="/" />
+        </div>
+
         {/* Wordmark + título — sem label de etapa */}
         <div className="flex items-center gap-2 mb-2">
           <span

@@ -51,15 +51,12 @@ body {
                     nunca escrevemos texto direto sobre o vidro transparente,
                     isso é a regra de contraste/acessibilidade do projeto.
 
-   Decisão de performance (pedida explicitamente, documentada por ser um
-   trade-off real): o filtro de distorção é aplicado em TODO elemento de
-   vidro, incluindo elementos pequenos repetidos (badges, chips). Isso é mais
-   caro de renderizar que um blur simples, especialmente em telas com muitos
-   elementos de vidro simultâneos — decisão consciente pela estética "iOS
-   Liquid Glass", aceitando o custo de performance em troca do efeito.
-   Se algum dia isso pesar demais num dispositivo real, o ajuste é remover
-   `url(#glass-distort)` do backdrop-filter em .glass-surface--sm (mantendo
-   blur) sem tocar nos elementos grandes.
+   Decisão de performance: o filtro de distorção SVG (feTurbulence +
+   feDisplacementMap) é aplicado apenas nos painéis grandes (.glass-surface).
+   Em elementos pequenos e repetidos (badges, chips, inputs) ele foi removido
+   — mantemos blur + saturate, que dão o efeito visual sem o custo de
+   recalcular pixels fora do elemento a cada frame. A diferença visual em
+   elementos de <32px de altura é imperceptível.
    --------------------------------------------------------------------------- */
 .glass-rim {
   position: relative;
@@ -75,6 +72,9 @@ body {
     rgba(255, 255, 255, 0.06) 100%
   );
   box-shadow: 0 20px 40px -18px rgba(0, 0, 0, 0.55);
+  /* Promove o painel pra camada de GPU — reduz repaint durante scroll
+     em páginas com múltiplos painéis de vidro simultâneos. */
+  will-change: transform;
 }
 
 .glass-surface {
@@ -153,22 +153,22 @@ body {
   opacity: 0.45;
 }
 
-/* Versão leve do vidro pra elementos pequenos e repetidos (badges, chips) —
-   mesma distorção (a pedido, mantida em todo lugar), sem a moldura de
-   três camadas completa nem os pontos de luz, que ficariam poluídos em
-   listas com muitos badges. */
+/* Versão leve do vidro pra elementos pequenos e repetidos (badges, chips).
+   SEM url(#glass-distort) — blur + saturate já dão o efeito suficiente
+   em elementos pequenos, e remover a distorção SVG elimina o custo de
+   recalcular pixels fora do elemento em cada instância. */
 .glass-chip {
-  backdrop-filter: blur(8px) saturate(140%) url(#glass-distort);
+  backdrop-filter: blur(8px) saturate(140%);
   -webkit-backdrop-filter: blur(8px) saturate(140%);
 }
 
-/* Inputs, selects e o container do toggle cards/tabela — vidro leve,
-   sem moldura de três camadas (ficaria pesado demais em controles de
-   formulário que o usuário olha o tempo todo). */
+/* Inputs e selects — vidro leve sem distorção SVG pelo mesmo motivo acima.
+   Campos de formulário ficam na tela o tempo todo e são reavaliados a cada
+   keystroke — remover a distorção aqui tem impacto direto na digitação. */
 .glass-input {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px) saturate(140%) url(#glass-distort);
+  backdrop-filter: blur(10px) saturate(140%);
   -webkit-backdrop-filter: blur(10px) saturate(140%);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -182,7 +182,7 @@ body {
    (o popup nativo do navegador) não herda isso — sem regra explícita nos
    <option>, o navegador desenha com o tema padrão do sistema (fundo
    branco). Funciona em Chrome/Edge/Firefox; navegadores móveis nativos
-   (Safari iOS, WebView Android) costuram ignorar isso e usar o picker do
+   (Safari iOS, WebView Android) costumam ignorar isso e usar o picker do
    próprio sistema — degrada pra aparência nativa, não quebra. */
 select.glass-input option {
   background-color: #12151b;
@@ -190,11 +190,11 @@ select.glass-input option {
 }
 
 /* Botão "outline" translúcido — usado nos botões de login OAuth e outras
-   ações secundárias. Levanta e ganha um brilho azul sutil no hover. */
+   ações secundárias. Sem distorção SVG pelo mesmo motivo dos inputs. */
 .glass-btn {
   border: 1px solid rgba(255, 255, 255, 0.09);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
-  backdrop-filter: blur(10px) saturate(140%) url(#glass-distort);
+  backdrop-filter: blur(10px) saturate(140%);
   -webkit-backdrop-filter: blur(10px) saturate(140%);
   transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }

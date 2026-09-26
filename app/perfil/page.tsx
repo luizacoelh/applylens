@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { parseArray } from "@/lib/json";
 import ProfileForm from "@/components/profile/ProfileForm";
+import BackButton from "@/components/ui/BackButton";
 import { UserProfile } from "@/types/profile";
 
 export default async function PerfilPage({
@@ -37,15 +37,7 @@ export default async function PerfilPage({
       </div>
 
       <div className="mx-auto max-w-xl">
-        {!isOnboarding && (
-          <Link
-            href="/"
-            className="text-sm text-[#85B7EB] hover:text-[#378ADD] transition-colors"
-            style={{ fontFamily: "var(--font-outfit)" }}
-          >
-            ← Dashboard
-          </Link>
-        )}
+        {!isOnboarding && <BackButton href="/" />}
 
         {/* Wordmark */}
         <div className="flex items-center gap-2 mt-4 mb-6">
@@ -64,11 +56,7 @@ export default async function PerfilPage({
           </span>
         </div>
 
-        {/* Título único — sem redundância */}
-        <h1
-          className="text-2xl font-semibold mb-2"
-          style={{ fontFamily: "var(--font-outfit)" }}
-        >
+        <h1 className="text-2xl font-semibold mb-2" style={{ fontFamily: "var(--font-outfit)" }}>
           {isOnboarding ? "Complete seu perfil pra começar" : "Perfil"}
         </h1>
         <p className="text-sm text-[#7C8494] mb-8">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
+import NewJobFab from "@/components/ui/NewJobFab";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -28,10 +29,12 @@ export default function RootLayout({
     <html lang="pt-BR" className={`${outfit.variable} ${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         {/*
-          Filtro de refração usado por todo elemento .glass-surface do app
+          Filtro de refração usado pelos painéis .glass-surface do app
           (ver app/globals.css). Definido uma única vez aqui — qualquer
           .glass-surface em qualquer página referencia url(#glass-distort)
           no backdrop-filter. Fica invisível (0x0) e não afeta layout.
+          Chips, inputs e botões NÃO usam este filtro (só blur+saturate) —
+          ver comentário de performance em globals.css.
         */}
         <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
           <filter id="glass-distort" x="-20%" y="-20%" width="140%" height="140%">
@@ -39,7 +42,19 @@ export default function RootLayout({
             <feDisplacementMap in="SourceGraphic" in2="noise" scale="22" xChannelSelector="R" yChannelSelector="G" />
           </filter>
         </svg>
+
         {children}
+
+        {/*
+          FAB global de "Nova vaga" — aparece em todas as páginas autenticadas
+          (o componente verifica a sessão internamente e não renderiza nada
+          na tela de login/onboarding). Fixo no canto inferior direito em
+          mobile (círculo 56px), expande pra texto em sm+.
+          O botão "+ Nova vaga" no header do Dashboard foi mantido — em
+          desktop os dois coexistem; em mobile o FAB substitui o do header
+          que some no breakpoint sm.
+        */}
+        <NewJobFab />
       </body>
     </html>
   );

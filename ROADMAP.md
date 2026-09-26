@@ -12,6 +12,55 @@ Notion.
 
 ## Concluído
 
+### Sprint 14 — Correções pós-deploy
+- [x] `proxy.ts`: header `x-pathname` injetado em todas as respostas —
+  corrigia 404 nas páginas de vaga causado pelo `NewJobFab` tentando ler
+  um header inexistente durante o render
+- [x] `components/ui/NewJobFab.tsx`: `try/catch` na leitura do header para
+  não quebrar o render em caso de falha; FAB agora some corretamente em
+  `/nova-vaga` e `/admin`
+- [x] `app/nova-vaga/page.tsx`: `BackButton` adicionado antes do wordmark
+- [x] `components/dashboard/StatsBar.tsx`: label "Funil" removido (só
+  `N vagas`); `hotspots={false}` no card de tecnologias elimina o glow
+  estranho no canto inferior direito; `font-mono` trocado por `font-outfit`
+  nos dois cards e nos badges
+
+### Sprint 13 — UX e consistência visual final
+- [x] `components/ui/BackButton.tsx` criado: botão de voltar reutilizável com
+  `glass-btn` + ícone SVG — substitui todos os links de texto simples
+  `← Dashboard` em: `app/vaga/[id]/page.tsx`, `app/admin/page.tsx`,
+  `app/perfil/page.tsx`
+- [x] `components/ui/NewJobFab.tsx` atualizado: FAB oculto nas rotas
+  `/nova-vaga` e `/admin` via header `x-pathname` lido no Server Component
+- [x] `middleware.ts` criado: injeta `x-pathname` em cada request pra
+  permitir renderização condicional do FAB sem Client Component
+- [x] `components/dashboard/StatsBar.tsx`: label "Funil" removido, substituído
+  por `N vagas`; `hotspots={false}` no card de tecnologias — eliminava o
+  glow estranho no canto inferior direito que aparecia quando o conteúdo
+  não preenchia o card
+- [x] `app/page.tsx`: "Exportar CSV" removido do header do Dashboard
+- [x] `components/profile/ProfileForm.tsx`: card "Exportar candidaturas"
+  adicionado no final da página de perfil (oculto no onboarding)
+- [x] `app/admin/page.tsx`: `BackButton` no lugar do link de texto simples
+
+### Sprint 12 — Performance + FAB + polish mobile
+- [x] `app/globals.css`: removido `url(#glass-distort)` de `.glass-chip`,
+  `.glass-input` e `.glass-btn` — painéis grandes (`.glass-surface`) mantêm
+  a distorção completa; elementos pequenos e repetidos ficam com
+  `blur + saturate` que é visualmente equivalente e muito mais barato.
+  `will-change: transform` adicionado em `.glass-rim` pra promover painéis
+  pra camada de GPU durante scroll.
+- [x] `app/loading.tsx`: skeleton corrigido pra espelhar exatamente o layout
+  do Dashboard em mobile (`flex-col gap-4` em mobile, `flex-row` em `sm+`) —
+  eliminava o desnívelamento visível na foto enviada
+- [x] `components/ui/NewJobFab.tsx` criado: FAB global de "Nova vaga", fixo
+  no canto inferior direito — círculo `56×56px` em mobile (só ícone `+`),
+  expande pra botão com texto em `sm+`. Verifica sessão internamente como
+  Server Component, não aparece no login/onboarding
+- [x] `app/layout.tsx` atualizado: importa e monta o `NewJobFab` abaixo de
+  `{children}` — disponível em todas as páginas autenticadas sem duplicar
+  lógica
+
 ### Sprint 11 — Polish de UX pré-produção
 - [x] `app/loading.tsx` refeito: usa `studio-backdrop` + glows + skeletons
   que espelham o layout real do Dashboard (wordmark, stats, filtros, cards)
