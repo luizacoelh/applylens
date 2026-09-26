@@ -234,3 +234,46 @@ com título único; `app/nova-vaga/page.tsx` sem label de etapa e sem
 inteiro quando há um erro crítico no layout raiz — por isso não pode importar
 nem depender de `globals.css`. O filtro SVG `#glass-distort`, os glows e os
 estilos do botão são declarados inline nele.
+
+## Seguranca - auditoria Sprint 15
+
+### Superficie analisada
+Todas as rotas de API (app/api/**), helpers de auth (lib/apiAuth.ts,
+lib/adminAuth.ts), rate limiting (lib/rateLimit.ts, lib/ipRateLimit.ts),
+integracao com IA (lib/gemini.ts), proxy (proxy.ts), e configuracao
+(next.config.ts, auth.ts).
+
+### Resultado por categoria
+
+| Categoria | Status | Detalhe |
+|---|---|---|
+| IDOR | OK | findOwnedJob cruza userId da sessao em 100% das queries |
+| SQL Injection | OK | Prisma ORM, zero $queryRaw no codigo |
+| XSS | OK | React escaping automatico; sem dangerouslySetInnerHTML |
+| Mass Assignment | OK | Whitelist explicita em todas as rotas |
+| Open Redirect | OK | callbackUrl.startsWith("/") bloqueia dominios externos |
+| Race Condition / TOCTTOU | OK | Rate limit atomico via updateMany com condicao no WHERE |
+| Timing Attack (webhook) | CORRIGIDO Sprint 15 | Trocado !== por crypto.timingSafeEqual |
+| Security Headers | CORRIGIDO Sprint 15 | CSP, X-Frame-Options, etc. em next.config.ts |
+| Prompt Injection | MITIGADO Sprint 15 | Delimitadores no prompt + validacao de schema no output |
+| DDoS / Abuso de IA | OK | Rate limit duplo: por usuario (diario) + por IP (horario) |
+
+### IMPORTANTE - JWT e isAdmin (fazer antes de migrar para JWT)
+Quando strategy mudar para "jwt", isAdmin fica no cookie por 30 dias.
+Revogar admin no /admin nao tera efeito imediato ate o token expirar.
+
+Adicionar em lib/adminAuth.ts antes de qualquer operacao admin:
+
+```ts
+const freshUser = await prisma.user.findUnique({
+  where: { id: session.user.id },
+  select: { isAdmin: true },
+});
+if (!freshUser?.isAdmin) {
+  return { user: null, response: NextResponse.json({ error: "Nao encontrado." }, { status: 404 }) };
+}
+```
+
+### Nota sobre getClientIp
+x-forwarded-for e confiavel apenas na Vercel. Se mudar de host, revisar
+lib/ipRateLimit.ts antes de confiar no rate limit por IP.

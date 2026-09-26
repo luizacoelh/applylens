@@ -12,6 +12,28 @@ Notion.
 
 ## Concluído
 
+### Sprint 15 — Auditoria e hardening de segurança
+- [x] `next.config.ts`: headers de segurança HTTP adicionados em todas as rotas:
+  `X-Frame-Options: DENY` (clickjacking), `X-Content-Type-Options: nosniff`
+  (MIME sniffing), `Referrer-Policy: strict-origin-when-cross-origin`
+  (vazamento de IDs em Referer), `Permissions-Policy` (câmera/microfone/GPS),
+  `Content-Security-Policy` completa (XSS, fontes, conexões)
+- [x] `app/api/webhook/n8n/route.ts`: comparação de segredo trocada de `!==`
+  para `crypto.timingSafeEqual` — elimina timing attack que permitia descobrir
+  o segredo byte a byte medindo tempo de resposta
+- [x] `lib/gemini.ts`: validação de schema (`isValidAnalysis`) adicionada após
+  `JSON.parse` — segunda linha de defesa contra prompt injection; outputs fora
+  dos limites de tamanho ou shape inesperado são rejeitados antes de ir ao banco
+- [x] Auditoria completa documentada em `ARCHITECTURE.md`:
+  IDOR ✅, SQL Injection ✅, Mass Assignment ✅, Open Redirect ✅,
+  Race Condition ✅, TOCTTOU n/a, XSS (React escaping) ✅
+- [ ] **Backlog — Performance** (próxima iteração):
+  trocar `strategy: "database"` → `strategy: "jwt"` em `auth.ts` para
+  eliminar roundtrip ao Turso a cada `auth()`, paralelizar queries com
+  `Promise.all` em `app/page.tsx` e `app/vaga/[id]/page.tsx`.
+  ATENÇÃO: ao migrar para JWT, `isAdmin` ficará no cookie por até 30 dias —
+  `requireAdmin()` deve re-validar no banco (ver nota em `ARCHITECTURE.md`)
+
 ### Sprint 14 — Correções pós-deploy
 - [x] `proxy.ts`: header `x-pathname` injetado em todas as respostas —
   corrigia 404 nas páginas de vaga causado pelo `NewJobFab` tentando ler

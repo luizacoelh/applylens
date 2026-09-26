@@ -1,17 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { JobAnalysis } from "@/types/job";
 
-// Modelo atual com tier gratuito confirmado (jul/2026). É um modelo "preview",
-// então o Google pode trocar o nome dele com pouco aviso — se um dia o
-// /api/analyze voltar a quebrar com erro 404 "no longer available", é isso:
-// procure o nome do modelo atual em https://ai.google.dev/gemini-api/docs/models
 const GEMINI_MODEL = "gemini-3-flash-preview";
 
-// Inicialização preguiçosa (só na primeira chamada, não no carregamento do
-// módulo): assim, se GEMINI_API_KEY estiver ausente em produção, só o
-// /api/analyze falha — o resto da aplicação (Dashboard, detalhes, etc.)
-// continua funcionando normalmente em vez da função serverless inteira
-// falhar ao inicializar.
 let cachedClient: GoogleGenerativeAI | null = null;
 
 function getClient(): GoogleGenerativeAI {
@@ -28,6 +19,10 @@ function getClient(): GoogleGenerativeAI {
   return cachedClient;
 }
 
+// Os delimitadores """ em torno do jobText são a principal mitigação contra
+// prompt injection: o modelo vê o texto da vaga como dado, não como instrução.
+// A validação de shape abaixo (isValidAnalysis) é a segunda camada: mesmo que
+// o modelo seja manipulado a retornar algo fora do esperado, rejeitamos.
 const PROMPT_TEMPLATE = (jobText: string) => `
 Você é um assistente de análise de vagas de emprego. Analise a vaga abaixo e
 retorne APENAS um JSON válido, sem markdown, sem texto extra, seguindo
@@ -56,8 +51,6 @@ ${jobText}
 """
 `;
 
-// Traduz erros técnicos da API do Gemini em mensagens que a pessoa
-// consegue entender e agir a partir delas, em vez de "não foi possível".
 function toFriendlyError(error: unknown): Error {
   const status = (error as { status?: number } | undefined)?.status;
 
@@ -80,6 +73,32 @@ function toFriendlyError(error: unknown): Error {
   return new Error("Não foi possível analisar a vaga. Tente novamente em instantes.");
 }
 
+// Valida que o output do Gemini tem o shape esperado antes de ser usado.
+// Segunda linha de defesa contra prompt injection: mesmo que o modelo retorne
+// dados manipulados (ex: campos com conteúdo arbitrário ou arrays gigantes),
+// eles são rejeitados aqui. Os limites de tamanho também protegem contra
+// o modelo gerar outputs anormalmente grandes que inflariam o banco.
+function isValidAnalysis(data: unknown): data is JobAnalysis {
+  if (!data || typeof data !== "object") return false;
+  const d = data as Record<string, unknown>;
+
+  if (typeof d.company !== "string" || d.company.length === 0 || d.company.length > 200) return false;
+  if (typeof d.title !== "string" || d.title.length === 0 || d.title.length > 200) return false;
+  if (typeof d.summary !== "string" || d.summary.length > 2000) return false;
+
+  for (const field of ["requirements", "technologies", "questions", "checklist"] as const) {
+    if (!Array.isArray(d[field])) return false;
+  }
+
+  const arr = d as { requirements: unknown[]; technologies: unknown[]; questions: unknown[]; checklist: unknown[] };
+  if (arr.requirements.length > 20) return false;
+  if (arr.technologies.length > 30) return false;
+  if (arr.questions.length > 10) return false;
+  if (arr.checklist.length > 10) return false;
+
+  return true;
+}
+
 export async function analyzeJobWithGemini(jobText: string): Promise<JobAnalysis> {
   const model = getClient().getGenerativeModel({ model: GEMINI_MODEL });
 
@@ -92,14 +111,19 @@ export async function analyzeJobWithGemini(jobText: string): Promise<JobAnalysis
     throw toFriendlyError(error);
   }
 
-  // Gemini às vezes envolve o JSON em ```json ... ``` mesmo quando instruído a não fazer isso
   const cleaned = rawText.replace(/```json|```/g, "").trim();
 
-  let parsed: JobAnalysis;
+  let parsed: unknown;
   try {
     parsed = JSON.parse(cleaned);
   } catch {
     throw new Error("A IA retornou um formato inválido. Tente novamente.");
+  }
+
+  // Valida o shape antes de retornar — rejeita outputs fora do esperado
+  if (!isValidAnalysis(parsed)) {
+    console.error("Output do Gemini fora do schema esperado:", cleaned.slice(0, 500));
+    throw new Error("A IA retornou um formato inesperado. Tente novamente.");
   }
 
   return parsed;

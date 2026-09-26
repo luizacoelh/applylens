@@ -1,45 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { stringifyArray } from "@/lib/json";
 import { mapJob } from "@/lib/jobMapper";
 import { analyzeJobWithGemini } from "@/lib/gemini";
 import { logAiUsage } from "@/lib/aiUsage";
 import { getAppSettings } from "@/lib/appSettings";
+import { JobAnalysis } from "@/types/job";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-// Endpoint preparado para uma futura automação via n8n (ex: um workflow que
-// monitora e-mails ou um feed de vagas e dispara isso automaticamente).
-// Está DESATIVADO por padrão: só funciona se N8N_WEBHOOK_SECRET estiver
-// definido no .env. Sem isso, retorna 501 — não é uma rota pública aberta.
-//
-// Desde a Sprint 6 (autenticação), toda vaga pertence a um usuário — como
-// este endpoint é chamado servidor-a-servidor (sem sessão de navegador), ele
-// precisa saber A QUEM atribuir a vaga criada. Isso é feito via
-// N8N_TARGET_USER_ID no .env: o id do usuário (já cadastrado via login
-// normal ao menos uma vez) que vai "dono" das vagas criadas por automação.
-//
-// Uso esperado (a partir de um nó HTTP Request do n8n):
-//   POST /api/webhook/n8n
-//   header: x-webhook-secret: <mesmo valor de N8N_WEBHOOK_SECRET>
-//   body: { "description": "texto completo da vaga" }
+// Valida o shape do output do Gemini antes de persistir no banco.
+// Defesa contra prompt injection: mesmo que o modelo retorne dados
+// manipulados, eles são rejeitados se saírem fora dos limites esperados.
+function isValidAnalysis(data: unknown): data is JobAnalysis {
+  if (!data || typeof data !== "object") return false;
+  const d = data as Record<string, unknown>;
+  return (
+    typeof d.company === "string" && d.company.length > 0 && d.company.length < 200 &&
+    typeof d.title === "string" && d.title.length > 0 && d.title.length < 200 &&
+    typeof d.summary === "string" && d.summary.length < 2000 &&
+    Array.isArray(d.requirements) && d.requirements.length <= 20 &&
+    Array.isArray(d.technologies) && d.technologies.length <= 30 &&
+    Array.isArray(d.questions) && d.questions.length <= 10 &&
+    Array.isArray(d.checklist) && d.checklist.length <= 10
+  );
+}
+
 export async function POST(req: NextRequest) {
   const secret = process.env.N8N_WEBHOOK_SECRET;
   const targetUserId = process.env.N8N_TARGET_USER_ID;
 
   if (!secret || !targetUserId) {
     return NextResponse.json(
-      {
-        error:
-          "Webhook não configurado. Defina N8N_WEBHOOK_SECRET e N8N_TARGET_USER_ID no .env para ativar.",
-      },
+      { error: "Webhook não configurado. Defina N8N_WEBHOOK_SECRET e N8N_TARGET_USER_ID no .env para ativar." },
       { status: 501 }
     );
   }
 
-  const receivedSecret = req.headers.get("x-webhook-secret");
-  if (receivedSecret !== secret) {
+  const receivedSecret = req.headers.get("x-webhook-secret") ?? "";
+
+  // timingSafeEqual em vez de !== para evitar timing attack:
+  // comparação com !== para assim que encontra o primeiro byte diferente,
+  // o que permite a um atacante medir microssegundos e descobrir o segredo
+  // byte a byte. timingSafeEqual sempre compara todos os bytes no mesmo tempo.
+  // Os buffers precisam ter o mesmo tamanho para a função não lançar exceção —
+  // se os tamanhos diferirem já sabemos que é inválido, mas ainda executamos
+  // a comparação pra não vazar informação sobre o tamanho do segredo.
+  const secretBuf = Buffer.from(secret);
+  const receivedBuf = Buffer.from(receivedSecret);
+  const lengthsMatch = secretBuf.length === receivedBuf.length;
+  // Compara com um buffer de mesmo tamanho se os tamanhos diferirem,
+  // pra timingSafeEqual não lançar — o resultado não importa nesse caso
+  // porque lengthsMatch já é false.
+  const safeReceived = lengthsMatch ? receivedBuf : Buffer.alloc(secretBuf.length);
+  const valid = lengthsMatch && timingSafeEqual(secretBuf, safeReceived);
+
+  if (!valid) {
     return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
   }
 
@@ -71,6 +89,15 @@ export async function POST(req: NextRequest) {
     }
 
     const analysis = await analyzeJobWithGemini(description);
+
+    // Valida o shape antes de persistir — defesa contra prompt injection
+    if (!isValidAnalysis(analysis)) {
+      return NextResponse.json(
+        { error: "A IA retornou um formato inesperado. Tente novamente." },
+        { status: 500 }
+      );
+    }
+
     const approxTokens = Math.ceil(description.length / 4);
     await logAiUsage({ userId: targetUser.id, action: "analyze_job_webhook", tokens: approxTokens });
 
