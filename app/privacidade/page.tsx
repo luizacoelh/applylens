@@ -30,7 +30,7 @@ export default function PrivacyPage() {
             className="text-sm font-semibold text-[#85B7EB]"
             style={{ fontFamily: "var(--font-outfit)" }}
           >
-            ApplyLens
+            VagaSync
           </span>
         </div>
 
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
             </h2>
             <p>
               Ao entrar com Google ou GitHub, recebemos seu nome, e-mail e foto de perfil públicos
-              dessas plataformas, usados apenas para identificar sua conta dentro do ApplyLens.
+              dessas plataformas, usados apenas para identificar sua conta dentro do VagaSync.
               As vagas que você cadastra (empresa, cargo, descrição, e a análise gerada por IA)
               ficam associadas à sua conta e visíveis apenas para você.
             </p>
@@ -65,7 +65,7 @@ export default function PrivacyPage() {
             <p>
               O texto da vaga que você cola é enviado à API do Google Gemini para gerar o resumo,
               tecnologias, requisitos, perguntas e checklist. Esse envio segue os termos de uso e
-              privacidade do próprio Google para a Gemini API — o ApplyLens não armazena esse
+              privacidade do próprio Google para a Gemini API — o VagaSync não armazena esse
               texto em nenhum serviço além do banco de dados do projeto.
             </p>
           </section>

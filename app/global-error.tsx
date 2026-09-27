@@ -42,7 +42,7 @@ export default function GlobalError({
           <div style={{ maxWidth: 400, textAlign: "center" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 32 }}>
               <span style={{ height: 20, width: 20, borderRadius: 6, background: "linear-gradient(155deg, #85B7EB, #378ADD)", boxShadow: "0 0 12px rgba(55,138,221,0.55), inset 0 1px 1px rgba(255,255,255,0.5)", display: "inline-block" }} />
-              <span style={{ fontSize: 15, fontWeight: 600 }}>ApplyLens</span>
+              <span style={{ fontSize: 15, fontWeight: 600 }}>VagaSync</span>
             </div>
 
             <p style={{ fontSize: 13, color: "#E5534B", marginBottom: 12 }}>

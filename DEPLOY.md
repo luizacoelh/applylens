@@ -1,4 +1,4 @@
-# Deploy — ApplyLens
+# Deploy — VagaSync
 
 Guia detalhado de deploy em produção (Vercel + Turso). Para visão geral do
 projeto, ver [`README.md`](./README.md).

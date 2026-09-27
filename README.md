@@ -1,8 +1,8 @@
-# ApplyLens
+# VagaSync
 
 ## Descrição
 
-ApplyLens é uma ferramenta de organização de candidaturas de emprego que usa
+VagaSync é uma ferramenta de organização de candidaturas de emprego que usa
 IA para reduzir o trabalho manual de acompanhar processos seletivos. Ao colar
 a descrição de uma vaga, a aplicação extrai automaticamente resumo,
 tecnologias exigidas, requisitos, perguntas prováveis de entrevista e um
@@ -13,7 +13,7 @@ precisa ser estudado antes da entrevista.
 O problema que resolve: candidatos que aplicam para várias vagas em paralelo
 perdem tempo reescrevendo anotações sobre cada processo e raramente têm uma
 visão consolidada do próprio funil (quantas aplicações viraram entrevista,
-quantas viraram oferta). O ApplyLens centraliza isso num só lugar, por
+quantas viraram oferta). O VagaSync centraliza isso num só lugar, por
 usuário, com dados isolados e persistidos.
 
 ## Funcionalidades
@@ -113,8 +113,8 @@ Duas decisões estruturais valem registro:
 ### 1. Clonar e instalar dependências
 
 ```bash
-git clone https://github.com/luizacoelh/applylens.git
-cd applylens
+git clone https://github.com/luizacoelh/vagasync.git
+cd vagasync
 npm install
 ```
 

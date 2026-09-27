@@ -49,7 +49,7 @@ export default async function DashboardPage() {
                 }}
               />
               <span className="text-sm font-semibold" style={{ fontFamily: "var(--font-outfit)" }}>
-                ApplyLens
+                VagaSync
               </span>
             </div>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-outfit)" }}>

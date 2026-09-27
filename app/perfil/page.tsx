@@ -52,7 +52,7 @@ export default async function PerfilPage({
             className="text-sm font-semibold text-[#85B7EB]"
             style={{ fontFamily: "var(--font-outfit)" }}
           >
-            ApplyLens
+            VagaSync
           </span>
         </div>
 

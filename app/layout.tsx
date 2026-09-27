@@ -16,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ApplyLens",
+  title: "VagaSync",
   description: "Organize suas candidaturas de emprego com ajuda de IA.",
 };
 

@@ -30,7 +30,7 @@ export default function TermsPage() {
             className="text-sm font-semibold text-[#85B7EB]"
             style={{ fontFamily: "var(--font-outfit)" }}
           >
-            ApplyLens
+            VagaSync
           </span>
         </div>
 
@@ -45,10 +45,10 @@ export default function TermsPage() {
               className="mb-3 text-xs font-medium uppercase tracking-wide text-[#7C8494]"
               style={{ fontFamily: "var(--font-outfit)" }}
             >
-              O que é o ApplyLens
+              O que é o VagaSync
             </h2>
             <p>
-              O ApplyLens é uma ferramenta para organizar candidaturas de emprego, usando IA para
+              O VagaSync é uma ferramenta para organizar candidaturas de emprego, usando IA para
               analisar descrições de vagas. É oferecido &quot;como está&quot;, sem garantias de
               disponibilidade contínua.
             </p>
@@ -62,7 +62,7 @@ export default function TermsPage() {
               Uso aceitável
             </h2>
             <p>
-              Não use o ApplyLens para enviar conteúdo ilegal, malicioso ou abusivo à API de
+              Não use o VagaSync para enviar conteúdo ilegal, malicioso ou abusivo à API de
               análise por IA, nem para tentar contornar os limites de uso configurados. Contas que
               abusarem do serviço podem ter o acesso suspenso.
             </p>

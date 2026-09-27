@@ -33,7 +33,7 @@ export default function Error({
             className="text-[15px] font-semibold"
             style={{ fontFamily: "var(--font-outfit)" }}
           >
-            ApplyLens
+            VagaSync
           </span>
         </div>
 

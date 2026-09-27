@@ -1,4 +1,4 @@
-# Arquitetura — ApplyLens
+# Arquitetura — VagaSync
 
 Detalhe de estrutura de pastas e decisões técnicas. Visão geral do produto
 fica no [`README.md`](./README.md); passo a passo de deploy no
@@ -7,7 +7,7 @@ fica no [`README.md`](./README.md); passo a passo de deploy no
 ## Estrutura do projeto
 
 ```
-applylens/
+vagasync/
   auth.ts                       # Config central do Auth.js (providers, adapter, callbacks)
   proxy.ts                      # Protege rotas (substitui middleware.ts no Next.js 16)
   app/
@@ -182,9 +182,9 @@ tratamento visual.
   compatibilidade com classes `font-mono` ainda não migradas nos arquivos
   que esta sprint não tocou — aponta pra Outfit agora, não mais um
   monoespaçado real, então nada quebra visualmente nesses arquivos.
-- **Wordmark substitui o rótulo de terminal.** O antigo `$ applylens
-  --login` (e variações como `$ applylens --dashboard`) foi trocado por um
-  quadradinho com gradiente + "ApplyLens" — mesmo padrão em toda tela
+- **Wordmark substitui o rótulo de terminal.** O antigo `$ vagasync
+  --login` (e variações como `$ vagasync --dashboard`) foi trocado por um
+  quadradinho com gradiente + "VagaSync" — mesmo padrão em toda tela
   convertida.
 - **`globals.css` deixou de ter modo claro.** O app nunca teve alternância
   de tema de verdade; o bloco `@media (prefers-color-scheme: dark)` do

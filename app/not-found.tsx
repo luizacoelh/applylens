@@ -21,7 +21,7 @@ export default function NotFound() {
             className="text-[15px] font-semibold"
             style={{ fontFamily: "var(--font-outfit)" }}
           >
-            ApplyLens
+            VagaSync
           </span>
         </div>
 

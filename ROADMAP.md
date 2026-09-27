@@ -1,4 +1,4 @@
-# ApplyLens — Roadmap
+# VagaSync — Roadmap
 
 ## Objetivo
 Um CRM pessoal para centralizar e gerenciar candidaturas de estágio/emprego
@@ -11,6 +11,26 @@ Notion.
 ```
 
 ## Concluído
+
+### Sprint 19 - Renomeacao para VagaSync + Painel de consumo de IA
+
+Renomeacao (VagaSync -> VagaSync):
+- package.json: name "jobpilot-ai" -> "vagasync"
+- app/layout.tsx: title e description atualizados
+- app/globals.css: comentario atualizado
+- app/page.tsx, login, perfil, nova-vaga, error, not-found, global-error:
+  wordmark "VagaSync" -> "VagaSync"
+- app/termos/page.tsx e app/privacidade/page.tsx: nome atualizado no texto
+- app/api/jobs/export/route.ts: filename "vagasync-vagas.csv" -> "vagasync-vagas.csv"
+- README.md: atualizar manualmente (nome do repo no GitHub tambem muda)
+
+Painel de consumo de IA em /admin:
+- components/admin/AiUsagePanel.tsx (novo): tres cards — totais gerais
+  (chamadas, tokens, usuarios), tabela por usuario (chamadas, tokens, ultimo
+  uso), grafico de barras horizontal com os ultimos 14 dias. Todos os dados
+  sao agregados no servidor, nada da tabela AiUsage e exposto ao cliente.
+- app/admin/page.tsx: adiciona getAiUsageStats() ao Promise.all existente e
+  renderiza <AiUsagePanel> apos <UsersTable>
 
 ### Sprint 18 - Sessao persistente (nao deslogar automaticamente)
 - [x] `auth.ts`: SESSION_MAX_AGE trocado de 15 minutos para 30 dias.
@@ -244,7 +264,7 @@ contexto atualiza o cache local imediatamente.
 
 ### Sprint SaaS-1 — Planos e assinaturas (quando aplicavel)
 
-Contexto: o ApplyLens e atualmente gratuito e de uso pessoal. Esta sprint
+Contexto: o VagaSync e atualmente gratuito e de uso pessoal. Esta sprint
 so deve ser executada quando houver decisao de monetizar. Os itens abaixo
 foram documentados agora para evitar retrabalho de arquitetura depois.
 

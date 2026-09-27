@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   Design tokens do ApplyLens. O app é sempre escuro (nunca teve modo claro de
+   Design tokens do VagaSync. O app é sempre escuro (nunca teve modo claro de
    verdade) — antes disso era feito com classes Tailwind repetidas em ~27
    arquivos (bg-[#1A1B23] etc). Centralizado aqui para consistência e pra dar
    um lugar único de ajustar cor/vidro no futuro.
