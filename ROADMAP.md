@@ -12,6 +12,20 @@ Notion.
 
 ## Concluído
 
+### Sprint 16 - Performance: JWT + Promise.all
+- [x] `auth.ts`: strategy trocada de "database" para "jwt" com access token
+  de 15 minutos. auth() passa a decodificar cookie local sem tocar o banco
+  — elimina 1 roundtrip ao Turso em cada navegacao de pagina
+- [x] `lib/adminAuth.ts`: re-validacao de isAdmin diretamente no banco
+  adicionada antes de qualquer operacao admin. Com JWT o isAdmin vive no
+  cookie; essa query garante que uma revogacao via /admin tem efeito
+  imediato nas rotas de API, independente do token ainda valido
+- [x] `app/page.tsx`: queries de profile e jobs paralelizadas com
+  Promise.all — de 2 roundtrips seriais para 1 paralelo
+- [x] `app/vaga/[id]/page.tsx`: queries de job e profile paralelizadas com
+  Promise.all — de 2 roundtrips seriais para 1 paralelo
+- Resultado esperado: skeleton visivel por ~80-150ms em vez de 800ms-1s+
+
 ### Sprint 15 — Auditoria e hardening de segurança
 - [x] `next.config.ts`: headers de segurança HTTP adicionados em todas as rotas:
   `X-Frame-Options: DENY` (clickjacking), `X-Content-Type-Options: nosniff`
@@ -187,6 +201,84 @@ Notion.
 - [x] Suporte a Turso/libSQL selecionado automaticamente por variável de
   ambiente
 
+## Backlog futuro
+
+### Sprint SaaS-1 — Planos e assinaturas (quando aplicavel)
+
+Contexto: o ApplyLens e atualmente gratuito e de uso pessoal. Esta sprint
+so deve ser executada quando houver decisao de monetizar. Os itens abaixo
+foram documentados agora para evitar retrabalho de arquitetura depois.
+
+#### Schema — adicionar em prisma/schema.prisma (modelo User)
+
+```prisma
+planStatus    String   @default("free") // "free" | "active" | "expired" | "cancelled"
+planExpiresAt DateTime?                 // null = plano gratuito sem expiracao
+stripeCustomerId    String? @unique     // ID do cliente no Stripe
+stripeSubscriptionId String? @unique    // ID da assinatura ativa no Stripe
+```
+
+Nao apagar dados na expiracao — so mudar planStatus. O usuario continua
+com acesso leitura aos dados existentes. Exclusao definitiva so apos
+periodo de graca longo (ex: 90 dias sem renovar), com aviso por email antes.
+
+#### Fluxo de expiracao automatico (sem intervencao manual)
+
+Opcao A — Webhook do Stripe (recomendada):
+O Stripe dispara eventos em tempo real quando um plano expira ou pagamento
+falha (customer.subscription.deleted, invoice.payment_failed).
+O endpoint ja existente app/api/webhook/n8n/route.ts serve de referencia
+para criar app/api/webhook/stripe/route.ts com a mesma estrutura de
+validacao de assinatura (usar stripe.webhooks.constructEvent em vez de
+timingSafeEqual manual — o SDK do Stripe ja faz isso internamente).
+Ao receber o evento, atualizar planStatus e planExpiresAt no banco.
+Nao ha polling, nao ha monitoramento manual, nao ha cron necessario.
+
+Opcao B — Vercel Cron como fallback:
+Para cobrir casos onde o webhook falhou (rede, timeout), um job agendado
+via vercel.json roda periodicamente (ex: a cada hora) e marca como expirado
+qualquer usuario com planExpiresAt < now() e planStatus == "active".
+Exemplo de configuracao em vercel.json:
+  { "crons": [{ "path": "/api/cron/check-subscriptions", "schedule": "0 * * * *" }] }
+O endpoint /api/cron/check-subscriptions deve ser protegido por um segredo
+no header (CRON_SECRET no .env) para evitar chamadas externas.
+
+As duas opcoes sao complementares — Stripe como fonte de verdade,
+Vercel Cron como rede de seguranca.
+
+#### Controle de acesso por plano
+
+Nao usar isAdmin para isso — criar um helper separado:
+
+```ts
+// lib/planAuth.ts
+export function hasActivePlan(user: { planStatus: string; planExpiresAt: Date | null }) {
+  if (user.planStatus === "free") return true; // plano gratuito sempre ativo
+  if (user.planStatus !== "active") return false;
+  if (!user.planExpiresAt) return true;
+  return user.planExpiresAt > new Date();
+}
+```
+
+As rotas de API verificam hasActivePlan() apos requireUser().
+Usuarios com plano expirado recebem 402 (Payment Required) em vez de 401.
+O frontend trata 402 mostrando um banner de renovacao em vez de deslogar.
+
+#### Experiencia do usuario na expiracao
+
+- Plano expira: usuario ve banner "Seu plano expirou — renove para continuar"
+- Acesso leitura mantido: vagas, analises e perfil continuam visiveis
+- Acoes bloqueadas: analisar nova vaga, editar status (opcional — decisao de produto)
+- Dados preservados: nunca apagar no momento da expiracao
+- Reativacao: assina novamente e volta exatamente de onde parou, sem perda alguma
+
+#### Dependencias a instalar quando chegar a hora
+
+```
+npm install stripe @stripe/stripe-js
+```
+
+
 ## Próximos passos (em ordem de prioridade)
 
 1. **Painel de consumo de IA (dentro de `/admin`)** — a tabela `AiUsage` já
@@ -198,7 +290,6 @@ Notion.
 3. **Checklist com itens marcáveis persistidos** — hoje é só leitura.
 4. **Refinar comparação de skills** — hoje é match exato normalizado
    (case/acento-insensitive); não entende sinônimos ("JS" != "JavaScript").
-5. **Screenshots reais no README** antes de tornar o repositório público.
 6. **Ativar e testar o webhook n8n de ponta a ponta** com um workflow real.
 7. **Monitoramento básico em produção** — logs estruturados / alerta simples
    quando `/api/analyze` falhar repetidamente.

@@ -12,15 +12,21 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const profile = await prisma.userProfile.findUnique({ where: { userId: session.user.id } });
+  // Promise.all — profile e jobs buscados em paralelo.
+  // Com JWT, auth() nao toca o banco, entao o primeiro roundtrip ao Turso
+  // acontece so aqui. As duas queries rodam simultaneamente em vez de
+  // sequenciais, cortando o tempo de espera a metade.
+  const [profile, jobs] = await Promise.all([
+    prisma.userProfile.findUnique({ where: { userId: session.user.id } }),
+    prisma.job.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
   if (!profile) {
     redirect("/perfil?onboarding=true");
   }
-
-  const jobs = await prisma.job.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-  });
 
   const jobList = jobs.map(mapJob);
 

@@ -4,47 +4,38 @@ import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import { prisma } from "@/lib/prisma";
 
-// Configuração central do Auth.js (NextAuth v5). Este arquivo é importado
-// tanto pelas rotas/páginas normais quanto pelo proxy.ts — no Next.js 16 o
-// proxy roda sempre em runtime Node.js (não Edge), então não precisamos
-// separar a config em duas partes como pedem os tutoriais mais antigos: o
-// PrismaAdapter (que usa driver nativo de banco) funciona nos dois lugares.
+// Duração do access token (cookie JWT). Curto de propósito:
+// - Rápido: auth() só decodifica o cookie, sem tocar o banco
+// - Seguro: se o token for comprometido, expira em 15 minutos
+// O refresh token (tabela Session no banco) dura 30 dias e é o que
+// permite renovar o access token silenciosamente quando ele expira.
+const ACCESS_TOKEN_MAX_AGE = 15 * 60; // 15 minutos em segundos
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
 
-  // Sessão em banco (tabela Session), não JWT — necessário porque o
-  // requisito da sprint pede a tabela Session de verdade, e porque assim
-  // dá para invalidar sessões revogando a linha no banco, se precisar.
+  // JWT para o access token (cookie de curta duração).
+  // O PrismaAdapter ainda gerencia refresh tokens na tabela Session —
+  // isso é o que permite revogar acesso: apagar a linha de Session no banco.
+  // Quando o access token expira, o Auth.js tenta renovar via refresh token.
+  // Se o refresh token não existir mais no banco, o usuário é deslogado
+  // automaticamente — sem precisar invalidar nada manualmente.
   session: {
-    strategy: "database",
+    strategy: "jwt",
+    maxAge: ACCESS_TOKEN_MAX_AGE,
   },
 
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
-      // Google confirma a propriedade do e-mail. Permitimos que o mesmo
-      // usuário entre por Google ou GitHub sem criar duas contas separadas.
       allowDangerousEmailAccountLinking: true,
     }),
     GitHub({
       clientId: process.env.AUTH_GITHUB_ID,
       clientSecret: process.env.AUTH_GITHUB_SECRET,
-      // O GitHub também é um provedor confiável deste fluxo OAuth. Sem esta
-      // opção, o Auth.js bloqueia por padrão a ligação pelo mesmo e-mail.
       allowDangerousEmailAccountLinking: true,
     }),
-    // Preparado para Magic Link por e-mail no futuro. A tabela
-    // VerificationToken já existe no schema para isso. Só falta:
-    //   1. npm install nodemailer (ou usar um provider como Resend)
-    //   2. descomentar o import e o provider abaixo
-    //   3. configurar AUTH_EMAIL_* / RESEND_API_KEY no .env
-    //
-    // import Nodemailer from "next-auth/providers/nodemailer";
-    // Nodemailer({
-    //   server: process.env.EMAIL_SERVER,
-    //   from: process.env.EMAIL_FROM,
-    // }),
   ],
 
   pages: {
@@ -53,16 +44,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 
   callbacks: {
-    // Com session strategy "database", o Auth.js já injeta `user` completo
-    // (vindo da tabela User) em vez de um token JWT — só precisamos garantir
-    // que `session.user.id`/`isAdmin` existem, já que o tipo padrão não
-    // inclui esses campos.
-    async session({ session, user }) {
-  if (session.user) {
-    session.user.id = user.id;
-    session.user.isAdmin = (user as typeof user & { isAdmin: boolean }).isAdmin;
-  }
-  return session;
-},
+    // Chamado quando o token é criado (login) ou renovado (a cada request
+    // após expirar). Gravamos id e isAdmin no token no momento do login —
+    // esses valores ficam no cookie e são lidos sem tocar o banco a cada
+    // auth(). O isAdmin é lido do banco só no login inicial.
+    async jwt({ token, user }) {
+      if (user) {
+        // Primeiro login: user vem populado pelo adapter com dados do banco
+        token.id = user.id;
+        token.isAdmin = (user as typeof user & { isAdmin: boolean }).isAdmin ?? false;
+      }
+      return token;
+    },
+
+    // Chamado a cada auth() — só lê o token que já está no cookie,
+    // sem query ao banco. É aqui que a performance melhora: a sessão
+    // inteira vive no cookie JWT, não numa tabela Session.
+    async session({ session, token }) {
+      if (session.user && token) {
+        session.user.id = token.id as string;
+        session.user.isAdmin = token.isAdmin as boolean;
+      }
+      return session;
+    },
   },
 });

@@ -30,15 +30,21 @@ export default async function VagaDetalhesPage({
   const { id } = await params;
   const { created } = await searchParams;
 
-  const rawJob = await prisma.job.findUnique({ where: { id } });
+  // Promise.all — job e profile buscados em paralelo.
+  // A verificacao de ownership (rawJob.userId !== session.user.id) acontece
+  // depois do Promise.all — ambas as queries ja terminaram quando chegamos aqui,
+  // entao nao ha risco de usar dados de outra pessoa.
+  const [rawJob, profile] = await Promise.all([
+    prisma.job.findUnique({ where: { id } }),
+    prisma.userProfile.findUnique({
+      where: { userId: session.user.id },
+      select: { skills: true },
+    }),
+  ]);
+
   if (!rawJob || rawJob.userId !== session.user.id) notFound();
 
   const job = mapJob(rawJob);
-
-  const profile = await prisma.userProfile.findUnique({
-    where: { userId: session.user.id },
-    select: { skills: true },
-  });
   const userSkills = parseArray(profile?.skills);
 
   return (
