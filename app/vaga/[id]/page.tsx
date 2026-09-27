@@ -1,19 +1,31 @@
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { mapJob } from "@/lib/jobMapper";
 import { parseArray } from "@/lib/json";
-import StatusSelect from "@/components/job/StatusSelect";
-import JobMetaEditor from "@/components/job/JobMetaEditor";
-import DetailSection from "@/components/ui/DetailSection";
-import TechBadge from "@/components/ui/TechBadge";
-import ChecklistItem from "@/components/job/ChecklistItem";
-import SkillCompatibility from "@/components/job/SkillCompatibility";
-import DeleteJobButton from "@/components/job/DeleteJobButton";
 import GlassPanel from "@/components/ui/Glass";
 import BackButton from "@/components/ui/BackButton";
-import { LOCATION_LABELS } from "@/lib/jobLocation";
+import VagaContent from "@/components/job/VagaContent";
+
+// Busca os dados da vaga no servidor — usada como fallback caso o contexto
+// client-side não tenha os dados (ex: acesso direto via URL, reload da página)
+async function getVagaData(id: string, userId: string) {
+  const [rawJob, profile] = await Promise.all([
+    prisma.job.findUnique({ where: { id } }),
+    prisma.userProfile.findUnique({
+      where: { userId },
+      select: { skills: true },
+    }),
+  ]);
+
+  if (!rawJob || rawJob.userId !== userId) return null;
+
+  return {
+    job: mapJob(rawJob),
+    userSkills: parseArray(profile?.skills),
+  };
+}
 
 export default async function VagaDetalhesPage({
   params,
@@ -30,22 +42,17 @@ export default async function VagaDetalhesPage({
   const { id } = await params;
   const { created } = await searchParams;
 
-  // Promise.all — job e profile buscados em paralelo.
-  // A verificacao de ownership (rawJob.userId !== session.user.id) acontece
-  // depois do Promise.all — ambas as queries ja terminaram quando chegamos aqui,
-  // entao nao ha risco de usar dados de outra pessoa.
-  const [rawJob, profile] = await Promise.all([
-    prisma.job.findUnique({ where: { id } }),
-    prisma.userProfile.findUnique({
-      where: { userId: session.user.id },
-      select: { skills: true },
-    }),
-  ]);
+  // Busca os dados no servidor. Com o Prisma connection cache corrigido
+  // e JWT ativo, isso é agora uma única conexão reutilizada + 1 roundtrip
+  // paralelo. Em navegações vindas do dashboard, VagaContent já mostra
+  // os dados do contexto client-side antes desta promise resolver.
+  const data = await getVagaData(id, session.user.id);
 
-  if (!rawJob || rawJob.userId !== session.user.id) notFound();
-
-  const job = mapJob(rawJob);
-  const userSkills = parseArray(profile?.skills);
+  if (!data) {
+    // notFound() não funciona bem dentro de async Server Components com
+    // Suspense — redirect para 404 explícito é mais confiável
+    redirect("/not-found");
+  }
 
   return (
     <main className="min-h-screen text-[#E4E6EB] px-4 py-16">
@@ -57,7 +64,6 @@ export default async function VagaDetalhesPage({
       <div className="mx-auto max-w-2xl">
         <div className="flex items-center justify-between">
           <BackButton href="/" />
-          <DeleteJobButton jobId={job.id} />
         </div>
 
         {created === "true" && (
@@ -66,99 +72,17 @@ export default async function VagaDetalhesPage({
           </div>
         )}
 
-        <div className="mt-6 flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="font-mono text-sm text-[#7C8494] uppercase tracking-wide">{job.company}</p>
-            <h1 className="mt-1 text-2xl font-semibold" style={{ fontFamily: "var(--font-outfit)" }}>
-              {job.title}
-            </h1>
-            {job.url && (
-              <a
-                href={job.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-1 inline-block text-xs text-[#85B7EB] hover:text-[#378ADD] break-all"
-              >
-                {job.url} ↗
-              </a>
-            )}
-            <p className="mt-2 text-xs text-[#7C8494]">
-              {LOCATION_LABELS[job.location]}
-              {job.salary && ` · ${job.salary}`}
-            </p>
-          </div>
-          <StatusSelect jobId={job.id} initialStatus={job.status} />
-        </div>
-
-        <GlassPanel className="mt-8" plateClassName="p-6 space-y-6">
-          {job.summary && (
-            <DetailSection label="Resumo">
-              <p className="text-sm text-[#C4C7D0] leading-relaxed">{job.summary}</p>
-            </DetailSection>
-          )}
-
-          {job.technologies.length > 0 && (
-            <DetailSection label="Tecnologias">
-              <div className="flex flex-wrap gap-2">
-                {job.technologies.map((tech) => (
-                  <TechBadge key={tech} tech={tech} />
-                ))}
-              </div>
-            </DetailSection>
-          )}
-
-          {job.technologies.length > 0 && (
-            <DetailSection label="Compatibilidade com suas skills">
-              <SkillCompatibility technologies={job.technologies} userSkills={userSkills} />
-            </DetailSection>
-          )}
-
-          {job.requirements.length > 0 && (
-            <DetailSection label="Requisitos">
-              <ul className="space-y-1 text-sm text-[#C4C7D0]">
-                {job.requirements.map((req, i) => (
-                  <li key={i} className="flex gap-2">
-                    <span className="text-[#378ADD]">–</span>
-                    {req}
-                  </li>
-                ))}
-              </ul>
-            </DetailSection>
-          )}
-
-          {job.questions.length > 0 && (
-            <DetailSection label="Perguntas prováveis">
-              <ul className="space-y-1 text-sm text-[#C4C7D0]">
-                {job.questions.map((q, i) => (
-                  <li key={i} className="flex gap-2">
-                    <span className="text-[#378ADD]">?</span>
-                    {q}
-                  </li>
-                ))}
-              </ul>
-            </DetailSection>
-          )}
-
-          {job.checklist.length > 0 && (
-            <DetailSection label="Checklist">
-              <ul className="space-y-1">
-                {job.checklist.map((item, i) => (
-                  <ChecklistItem key={i} text={item} />
-                ))}
-              </ul>
-            </DetailSection>
-          )}
-
-          <DetailSection label="Detalhes da candidatura">
-            <JobMetaEditor
-              jobId={job.id}
-              initialUrl={job.url}
-              initialLocation={job.location}
-              initialSalary={job.salary}
-              initialAppliedAt={job.appliedAt}
-            />
-          </DetailSection>
-        </GlassPanel>
+        {/*
+          VagaContent é um Client Component que:
+          1. Tenta ler do JobsContext (dados já em memória do dashboard) — instantâneo
+          2. Se não tiver no contexto (acesso direto, reload), usa os dados do servidor
+          O resultado: transições do dashboard para vaga não mostram skeleton nunca.
+        */}
+        <VagaContent
+          jobId={id}
+          serverJob={data.job}
+          serverUserSkills={data.userSkills}
+        />
       </div>
     </main>
   );

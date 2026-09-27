@@ -5,17 +5,17 @@ import { PrismaLibSql } from "@prisma/adapter-libsql";
 // Este projeto usa DOIS drivers de banco dependendo do ambiente:
 //
 // - Local / desenvolvimento: SQLite via better-sqlite3 (arquivo local, rápido, zero custo)
-// - Produção (Vercel): libSQL via Turso (mesmo SQLite por baixo, mas hospedado —
-//   necessário porque o filesystem de funções serverless é efêmero e não guarda
-//   um arquivo .db entre requisições; ver README, seção "Deploy")
+// - Produção (Vercel): libSQL via Turso (mesmo SQLite por baixo, mas hospedado)
 //
-// Em desenvolvimento sempre usamos o SQLite local. Isso evita que credenciais
-// de produção mantidas no `.env` façam o `next dev` consultar um Turso ainda
-// sem migrations e quebrem o login. Em produção, TURSO_DATABASE_URL seleciona
-// o banco hospedado normalmente. Os dois pacotes ficam marcados em
-// next.config.ts (serverExternalPackages) para não serem empacotados pelo
-// bundler — o Node.js resolve o binário nativo diretamente em runtime, o que
-// evita problemas comuns de build serverless.
+// IMPORTANTE — globalForPrisma em TODOS os ambientes (incluindo produção):
+// Em serverless (Vercel), cada função pode ser reutilizada entre requisições
+// dentro da mesma instância quente ("warm"). Sem o globalThis, cada request
+// criaria um novo PrismaClient e abriria uma nova conexão HTTP ao Turso —
+// esse cold start de conexão era a principal causa do skeleton aparecer por
+// 800ms+ em produção, mesmo com JWT e Promise.all já aplicados.
+// Com o cache no globalThis, a conexão é reutilizada enquanto a função
+// permanecer quente — que é o comportamento esperado e documentado pela
+// própria Prisma para ambientes serverless.
 function createPrismaClient(): PrismaClient {
   const tursoUrl = process.env.TURSO_DATABASE_URL;
   const tursoToken = process.env.TURSO_AUTH_TOKEN;
@@ -39,8 +39,10 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+// Cache em TODOS os ambientes — não só em desenvolvimento.
+// Em dev evita "too many connections" com hot reload.
+// Em produção reutiliza a conexão HTTP ao Turso entre requests na mesma
+// instância serverless quente, eliminando o overhead de reconexão.
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+globalForPrisma.prisma = prisma;

@@ -7,6 +7,7 @@ import JobTable from "@/components/job/JobTable";
 import FilterBar, { FilterState } from "@/components/dashboard/FilterBar";
 import StatsBar from "@/components/dashboard/StatsBar";
 import EmptyState from "@/components/ui/EmptyState";
+import { JobsProvider } from "@/lib/JobsContext";
 
 function normalize(value: string): string {
   return value.trim().toLowerCase();
@@ -51,7 +52,10 @@ export default function DashboardClient({ jobs }: { jobs: Job[] }) {
   }
 
   return (
-    <>
+    // JobsProvider persiste os dados no cliente durante a sessão de navegação.
+    // Quando o usuário clica num card de vaga, a página /vaga/[id] lê do
+    // contexto instantaneamente — sem roundtrip ao Turso, sem skeleton.
+    <JobsProvider initialJobs={jobs}>
       <StatsBar jobs={jobs} />
 
       <FilterBar
@@ -77,6 +81,6 @@ export default function DashboardClient({ jobs }: { jobs: Job[] }) {
       ) : (
         <JobTable jobs={filteredJobs} />
       )}
-    </>
+    </JobsProvider>
   );
 }

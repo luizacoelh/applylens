@@ -12,6 +12,45 @@ Notion.
 
 ## Concluído
 
+### Sprint 18 - Sessao persistente (nao deslogar automaticamente)
+- [x] `auth.ts`: SESSION_MAX_AGE trocado de 15 minutos para 30 dias.
+  O usuario permanece logado ate fazer logout explicitamente ou ter a
+  sessao revogada no banco. updateAge definido em 24h: usuarios ativos
+  diariamente renovam o token silenciosamente sem nenhuma interrupcao.
+  Seguranca mantida: cookie httpOnly/secure/sameSite, sem dados sensiveis
+  no token, admin re-validado no banco a cada request critico.
+
+### Sprint 17 - Performance: eliminacao do skeleton nas transicoes
+
+Contexto: o skeleton aparecia em toda navegacao porque cada pagina e um
+Suspense boundary automatico no App Router. Mesmo com JWT e Promise.all,
+qualquer await no Server Component ativa o loading.tsx. A solucao nao e
+acelerar o servidor, e nao precisar ir ao servidor nas transicoes internas.
+
+Tres fixes aplicados:
+
+FIX 1 - lib/prisma.ts (maior impacto em producao):
+O globalForPrisma so salvava o cliente Prisma em desenvolvimento.
+Em producao, cada request criava uma nova instancia e abria uma nova
+conexao HTTP ao Turso - esse cold start de conexao era a causa principal
+do skeleton durar 800ms+ em producao mesmo apos o JWT. Corrigido removendo
+a condicional NODE_ENV - o cache agora funciona em todos os ambientes.
+
+FIX 2 - JobsContext + VagaContent (elimina skeleton dashboard->vaga):
+O dashboard ja recebe TODOS os dados de todas as vagas. Ao clicar num card,
+esses dados ja estao em memoria no cliente. Com o JobsContext, a pagina
+/vaga/[id] le do contexto instantaneamente - zero roundtrip, zero skeleton.
+Acesso direto via URL ou reload continua funcionando normalmente via serverJob
+(Server Component busca e passa como prop).
+Arquivos: lib/JobsContext.tsx (novo), components/job/VagaContent.tsx (novo),
+components/dashboard/DashboardClient.tsx (adiciona JobsProvider),
+app/vaga/[id]/page.tsx (passa serverJob como prop para VagaContent)
+
+FIX 3 - Efeito colateral positivo:
+Com o contexto, mudancas de status (StatusSelect) e edicoes (JobMetaEditor)
+podem ser refletidas no dashboard sem router.refresh() - o updateJob() do
+contexto atualiza o cache local imediatamente.
+
 ### Sprint 16 - Performance: JWT + Promise.all
 - [x] `auth.ts`: strategy trocada de "database" para "jwt" com access token
   de 15 minutos. auth() passa a decodificar cookie local sem tocar o banco
@@ -290,6 +329,7 @@ npm install stripe @stripe/stripe-js
 3. **Checklist com itens marcáveis persistidos** — hoje é só leitura.
 4. **Refinar comparação de skills** — hoje é match exato normalizado
    (case/acento-insensitive); não entende sinônimos ("JS" != "JavaScript").
+5. **Screenshots reais no README** antes de tornar o repositório público.
 6. **Ativar e testar o webhook n8n de ponta a ponta** com um workflow real.
 7. **Monitoramento básico em produção** — logs estruturados / alerta simples
    quando `/api/analyze` falhar repetidamente.
