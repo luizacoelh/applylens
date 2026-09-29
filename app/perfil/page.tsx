@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { parseArray } from "@/lib/json";
 import ProfileForm from "@/components/profile/ProfileForm";
 import BackButton from "@/components/ui/BackButton";
+import { getAppSettings } from "@/lib/appSettings";
 import { UserProfile } from "@/types/profile";
 
 export default async function PerfilPage({
@@ -19,7 +20,17 @@ export default async function PerfilPage({
   const { onboarding } = await searchParams;
   const isOnboarding = onboarding === "true";
 
-  const rawProfile = await prisma.userProfile.findUnique({ where: { userId: session.user.id } });
+  const [rawProfile, aiUser, settings] = await Promise.all([
+    prisma.userProfile.findUnique({ where: { userId: session.user.id } }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { geminiCallCount: true, dailyAiLimitOverride: true },
+    }),
+    getAppSettings(),
+  ]);
+
+  const dailyLimit = aiUser?.dailyAiLimitOverride ?? settings.dailyAiLimit;
+  const usedToday = aiUser?.geminiCallCount ?? 0;
   const profile: UserProfile | null = rawProfile
     ? {
         goal: rawProfile.goal,
@@ -65,7 +76,7 @@ export default async function PerfilPage({
             : "Suas informações são usadas para comparar suas skills com as tecnologias de cada vaga."}
         </p>
 
-        <ProfileForm initialProfile={profile} isOnboarding={isOnboarding} />
+        <ProfileForm initialProfile={profile} isOnboarding={isOnboarding} usedToday={usedToday} dailyLimit={dailyLimit} />
       </div>
     </main>
   );

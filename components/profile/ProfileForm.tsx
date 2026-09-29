@@ -10,9 +10,13 @@ import GlassPanel from "@/components/ui/Glass";
 export default function ProfileForm({
   initialProfile,
   isOnboarding,
+  usedToday = 0,
+  dailyLimit = 10,
 }: {
   initialProfile: UserProfile | null;
   isOnboarding: boolean;
+  usedToday?: number;
+  dailyLimit?: number;
 }) {
   const router = useRouter();
 
@@ -169,6 +173,53 @@ export default function ProfileForm({
           </div>
         </form>
       </GlassPanel>
+
+      {/* Contador de uso de IA — só aparece fora do onboarding */}
+      {!isOnboarding && (
+        <GlassPanel plateClassName="px-5 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p
+                className="text-sm font-medium text-[#C4C7D0]"
+                style={{ fontFamily: "var(--font-outfit)" }}
+              >
+                Análises de IA hoje
+              </p>
+              <p className="text-xs text-[#7C8494] mt-0.5">
+                Reinicia automaticamente a cada 24 horas.
+              </p>
+            </div>
+            <div className="shrink-0 text-right">
+              <p
+                className="text-lg font-semibold"
+                style={{
+                  fontFamily: "var(--font-outfit)",
+                  color: usedToday >= dailyLimit ? "#E5534B" : usedToday >= dailyLimit * 0.8 ? "#F0B429" : "#4ADE80",
+                }}
+              >
+                {usedToday}/{dailyLimit}
+              </p>
+              <p className="text-xs text-[#7C8494]">
+                {usedToday >= dailyLimit ? "Limite atingido" : `${dailyLimit - usedToday} restante${dailyLimit - usedToday !== 1 ? "s" : ""}`}
+              </p>
+            </div>
+          </div>
+          {/* Barra de progresso */}
+          <div className="mt-3 h-1.5 w-full rounded-full bg-white/8 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.min((usedToday / dailyLimit) * 100, 100)}%`,
+                background: usedToday >= dailyLimit
+                  ? "#E5534B"
+                  : usedToday >= dailyLimit * 0.8
+                  ? "#F0B429"
+                  : "linear-gradient(90deg, #378ADD, #85B7EB)",
+              }}
+            />
+          </div>
+        </GlassPanel>
+      )}
 
       {/* Exportar CSV — só aparece fora do onboarding, onde já há vagas cadastradas */}
       {!isOnboarding && (

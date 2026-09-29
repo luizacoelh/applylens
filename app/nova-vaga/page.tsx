@@ -16,6 +16,40 @@ type Step = "input" | "preview";
 // pra dar feedback imediato, o servidor sempre revalida.
 const MAX_DESCRIPTION_LENGTH = 8000;
 
+// Vaga de exemplo para quem quer testar sem ter uma vaga em mãos.
+// Texto realista de uma vaga de estágio em desenvolvimento web.
+const EXAMPLE_JOB = `Estágio em Desenvolvimento Web — Empresa Exemplo Tecnologia
+
+Sobre a vaga:
+Buscamos estudantes de TI, Ciência da Computação, Engenharia de Software ou áreas relacionadas para integrar nosso time de produto como estagiário(a) de desenvolvimento web.
+
+Responsabilidades:
+- Desenvolver e manter funcionalidades no frontend e backend das nossas aplicações
+- Participar de code reviews e reuniões de planejamento de sprint
+- Colaborar com o time de design para implementar interfaces responsivas
+- Escrever testes automatizados para as funcionalidades desenvolvidas
+
+Requisitos:
+- Cursando graduação em área de TI (a partir do 3º semestre)
+- Conhecimento em HTML, CSS e JavaScript
+- Noções de React ou outro framework frontend
+- Familiaridade com Git e fluxo de trabalho em equipe
+
+Diferenciais:
+- Experiência com TypeScript
+- Conhecimento em Node.js ou Python no backend
+- Experiência com banco de dados SQL
+
+O que oferecemos:
+- Bolsa-auxílio compatível com o mercado
+- Vale-refeição e vale-transporte
+- Modelo híbrido (2x presencial por semana)
+- Mentoria com desenvolvedores seniores
+- Possibilidade de efetivação
+
+Carga horária: 30h semanais
+Local: São Paulo, SP (híbrido)`;
+
 function todayInputValue(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -183,14 +217,24 @@ export default function NovaVagaPage() {
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Cole aqui o texto completo da vaga..."
+              placeholder="Cole aqui o texto da vaga — pode ser do LinkedIn, Gupy, Indeed, site da empresa ou qualquer outro lugar."
               rows={12}
               maxLength={MAX_DESCRIPTION_LENGTH}
               className="glass-input mt-2 w-full rounded-xl px-4 py-3 text-sm text-[#E4E6EB] placeholder:text-[#4B4F5C] resize-none"
             />
-            <p className="mt-1 text-right text-xs text-[#7C8494]">
-              {description.length}/{MAX_DESCRIPTION_LENGTH}
-            </p>
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => setDescription(EXAMPLE_JOB)}
+                className="text-xs text-[#85B7EB] hover:text-[#378ADD] transition-colors"
+                style={{ fontFamily: "var(--font-outfit)" }}
+              >
+                Ver como funciona com uma vaga de exemplo
+              </button>
+              <span className="text-xs text-[#7C8494] shrink-0">
+                {description.length}/{MAX_DESCRIPTION_LENGTH}
+              </span>
+            </div>
 
             <button
               onClick={handleAnalyze}
