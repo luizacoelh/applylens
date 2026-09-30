@@ -1,7 +1,9 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, type Part } from "@google/generative-ai";
 import { JobAnalysis } from "@/types/job";
 
-const GEMINI_MODEL = "gemini-3.5-flash";
+// gemini-3.5-flash-lite — versão menor e mais rápida, ideal para JSON estruturado.
+// Se a qualidade das análises cair, trocar de volta para "gemini-3.5-flash".
+const GEMINI_MODEL = "gemini-3.5-flash-lite";
 
 let cachedClient: GoogleGenerativeAI | null = null;
 
@@ -23,33 +25,17 @@ function getClient(): GoogleGenerativeAI {
 // prompt injection: o modelo vê o texto da vaga como dado, não como instrução.
 // A validação de shape abaixo (isValidAnalysis) é a segunda camada: mesmo que
 // o modelo seja manipulado a retornar algo fora do esperado, rejeitamos.
-const PROMPT_TEMPLATE = (jobText: string) => `
-Você é um assistente de análise de vagas de emprego. Analise a vaga abaixo e
-retorne APENAS um JSON válido, sem markdown, sem texto extra, seguindo
-exatamente este formato:
+const PROMPT_TEMPLATE = (jobText: string) => `Analise a vaga abaixo e retorne APENAS JSON válido, sem markdown.
 
-{
-  "company": "nome da empresa",
-  "title": "cargo",
-  "summary": "resumo da vaga em 2-3 frases",
-  "requirements": ["requisito 1", "requisito 2"],
-  "technologies": ["tecnologia 1", "tecnologia 2"],
-  "questions": ["pergunta técnica provável 1", "pergunta técnica provável 2", "pergunta técnica provável 3"],
-  "checklist": ["tarefa de preparação 1", "tarefa de preparação 2", "tarefa de preparação 3"]
-}
+Formato obrigatório:
+{"company":"string","title":"string","summary":"string (2-3 frases)","requirements":["string"],"technologies":["nome da tech"],"questions":["pergunta"],"checklist":["ação"]}
 
-Regras:
-- "technologies" deve conter só nomes de tecnologias/ferramentas (ex: "Java", "Docker", "SQL"), sem frases.
-- "questions" deve ter entre 3 e 5 perguntas técnicas prováveis de entrevista baseadas nas tecnologias e requisitos da vaga.
-- "checklist" deve ter entre 3 e 5 ações práticas de preparação (ex: "Revisar conceitos de REST API").
-- Se a empresa ou o cargo não estiverem explícitos no texto, faça sua melhor inferência.
-- Responda em português.
+Regras: technologies = só nomes (Java, Docker, SQL). questions = 3 a 5 perguntas de entrevista. checklist = 3 a 5 ações de preparo. Responda em português.
 
 Vaga:
 """
 ${jobText}
-"""
-`;
+"""`;
 
 function toFriendlyError(error: unknown): Error {
   // O SDK do Google retorna o status HTTP de formas diferentes dependendo
@@ -138,10 +124,10 @@ async function callGeminiWithRetry(
       const candidate = result.response.candidates?.[0];
       if (!candidate) throw new Error("A IA não retornou nenhuma resposta.");
 
-      const parts = candidate.content?.parts ?? [];
+      const parts: Part[] = candidate.content?.parts ?? [];
       const textParts = parts
-        .filter((p: Record<string, unknown>) => typeof p.text === "string" && !p.thought)
-        .map((p: Record<string, unknown>) => p.text as string);
+        .filter((p) => "text" in p && !("thought" in p && p.thought))
+        .map((p) => ("text" in p ? (p as { text: string }).text : ""));
 
       const text = textParts.length > 0 ? textParts.join("") : result.response.text();
 
@@ -170,14 +156,7 @@ export async function analyzeJobWithGemini(jobText: string): Promise<JobAnalysis
   // Modelos com thinking:true (todos os disponíveis nesta chave) encapsulam
   // a resposta de forma diferente. Desabilitar thinking garante resposta
   // direta em texto simples, compatível com o JSON que esperamos.
-  const model = getClient().getGenerativeModel({
-    model: GEMINI_MODEL,
-    generationConfig: {
-      // @ts-expect-error — thinkingConfig não está nos tipos do SDK 0.24.x
-      // mas é suportado pela API para modelos com thinking habilitado
-      thinkingConfig: { thinkingBudget: 0 },
-    },
-  });
+  const model = getClient().getGenerativeModel({ model: GEMINI_MODEL });
 
   let rawText: string;
   try {
