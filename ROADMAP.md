@@ -13,6 +13,29 @@ de forma inteligente, sem a complexidade de um Kanban ou a bagunça de um Notion
 
 ## Concluído
 
+### Sprint 21 — fix(gemini): modelo corrigido para alias estável
+- [x] `lib/gemini.ts`: modelo trocado para `gemini-flash-latest` — alias oficial
+  do Google que sempre aponta para o Flash mais recente disponível na chave,
+  sem quebrar quando o Google depreca versões específicas. Modelos anteriores
+  tentados (`gemini-3-flash-preview`, `gemini-2.0-flash`, `gemini-2.5-flash`)
+  retornavam 404 por indisponibilidade no projeto ApplyLens2 ou por
+  descontinuação para novos usuários — problema do lado do Google, não do código
+- [x] `lib/gemini.ts`: `toFriendlyError` refatorado para normalizar status HTTP
+  independente do formato retornado pelo SDK (`.status`, `.httpErrorCode`, ou
+  embutido na mensagem como string)
+
+### Sprint 21 — fix(gemini): modelo e retry corrigidos
+- [x] `lib/gemini.ts`: modelo trocado para `gemini-3.5-flash` — estável,
+  disponível na chave Pro, nome fixo (evita surpresas de alias dinâmico).
+  Modelos anteriores tentados: `gemini-3-flash-preview` (instável), 
+  `gemini-2.0-flash` e `gemini-2.5-flash` (404 na chave), 
+  `gemini-flash-latest` (503 frequente por sobrecarga do alias)
+- [x] `lib/gemini.ts`: retry automático com backoff exponencial (até 3x,
+  2s e 4s de espera) para erros 503 temporários do servidor do Google
+- [x] `lib/gemini.ts`: `toFriendlyError` corrigido para detectar 503 via
+  mensagem de texto além do campo numérico; mensagem específica por tipo
+  de erro (503, 429, 404, 400) em vez de fallback genérico
+
 ### Sprint 20 — UX mais intuitivo + contador de tokens
 - [x] `app/nova-vaga/page.tsx`: placeholder do textarea atualizado para
   mencionar LinkedIn, Gupy, Indeed — mais claro de onde colar o texto

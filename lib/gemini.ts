@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { JobAnalysis } from "@/types/job";
 
-const GEMINI_MODEL = "gemini-3-flash-preview";
+const GEMINI_MODEL = "gemini-3.5-flash";
 
 let cachedClient: GoogleGenerativeAI | null = null;
 
@@ -52,22 +52,40 @@ ${jobText}
 `;
 
 function toFriendlyError(error: unknown): Error {
-  const status = (error as { status?: number } | undefined)?.status;
+  // O SDK do Google retorna o status HTTP de formas diferentes dependendo
+  // da versão e do tipo de erro — pode vir como .status (number), como
+  // .httpErrorCode (number), ou embutido na mensagem como string "404 Not Found".
+  // Normalizar todas as formas antes de verificar.
+  const err = error as Record<string, unknown> | null;
+  const msg = typeof err?.message === "string" ? err.message : "";
+  const status =
+    (typeof err?.status === "number" ? err.status : null) ??
+    (typeof err?.httpErrorCode === "number" ? err.httpErrorCode : null) ??
+    (/503/.test(msg) ? 503 : null) ??
+    (/429/.test(msg) ? 429 : null) ??
+    (/404/.test(msg) ? 404 : null) ??
+    (/400/.test(msg) ? 400 : null);
+
+  if (status === 503) {
+    return new Error(
+      "O serviço de IA está sobrecarregado no momento. Tente novamente em alguns segundos."
+    );
+  }
 
   if (status === 429) {
     return new Error(
-      "Limite de uso gratuito da IA atingido no momento. Espere alguns segundos e tente novamente."
+      "Limite de uso da IA atingido. Espere alguns segundos e tente novamente."
     );
   }
 
   if (status === 404) {
     return new Error(
-      `O modelo de IA configurado (${GEMINI_MODEL}) não está mais disponível. É preciso atualizar o nome do modelo em lib/gemini.ts.`
+      `O modelo de IA configurado (${GEMINI_MODEL}) não está disponível. Verifique lib/gemini.ts.`
     );
   }
 
   if (status === 400) {
-    return new Error("A descrição enviada não pôde ser processada pela IA. Tente reformular ou encurtar o texto.");
+    return new Error("A descrição enviada não pôde ser processada. Tente reformular ou encurtar o texto.");
   }
 
   return new Error("Não foi possível analisar a vaga. Tente novamente em instantes.");
@@ -99,15 +117,73 @@ function isValidAnalysis(data: unknown): data is JobAnalysis {
   return true;
 }
 
+// Espera N ms antes de continuar — usado entre tentativas de retry
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Tenta chamar o Gemini até 3 vezes com backoff exponencial antes de desistir.
+// 503 é temporário (servidor sobrecarregado) — retry resolve na maioria dos casos.
+async function callGeminiWithRetry(
+  model: ReturnType<InstanceType<typeof GoogleGenerativeAI>["getGenerativeModel"]>,
+  prompt: string,
+  maxAttempts = 3
+): Promise<string> {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const result = await model.generateContent(prompt);
+
+      const candidate = result.response.candidates?.[0];
+      if (!candidate) throw new Error("A IA não retornou nenhuma resposta.");
+
+      const parts = candidate.content?.parts ?? [];
+      const textParts = parts
+        .filter((p: Record<string, unknown>) => typeof p.text === "string" && !p.thought)
+        .map((p: Record<string, unknown>) => p.text as string);
+
+      const text = textParts.length > 0 ? textParts.join("") : result.response.text();
+
+      if (!text || text.trim() === "") throw new Error("A IA retornou uma resposta vazia.");
+
+      return text;
+    } catch (error) {
+      lastError = error;
+      const msg = (error as Error)?.message ?? "";
+      const is503 = /503/.test(msg);
+
+      console.error(`Gemini tentativa ${attempt}/${maxAttempts}:`, msg.slice(0, 120));
+
+      // Só faz retry em 503 — outros erros falham imediatamente
+      if (!is503 || attempt === maxAttempts) break;
+
+      // Backoff: 2s na primeira, 4s na segunda
+      await sleep(attempt * 2000);
+    }
+  }
+
+  throw lastError;
+}
+
 export async function analyzeJobWithGemini(jobText: string): Promise<JobAnalysis> {
-  const model = getClient().getGenerativeModel({ model: GEMINI_MODEL });
+  // Modelos com thinking:true (todos os disponíveis nesta chave) encapsulam
+  // a resposta de forma diferente. Desabilitar thinking garante resposta
+  // direta em texto simples, compatível com o JSON que esperamos.
+  const model = getClient().getGenerativeModel({
+    model: GEMINI_MODEL,
+    generationConfig: {
+      // @ts-expect-error — thinkingConfig não está nos tipos do SDK 0.24.x
+      // mas é suportado pela API para modelos com thinking habilitado
+      thinkingConfig: { thinkingBudget: 0 },
+    },
+  });
 
   let rawText: string;
   try {
-    const result = await model.generateContent(PROMPT_TEMPLATE(jobText));
-    rawText = result.response.text();
+    rawText = await callGeminiWithRetry(model, PROMPT_TEMPLATE(jobText));
   } catch (error) {
-    console.error("Erro na chamada à API do Gemini:", error);
+    console.error("Erro na chamada à API do Gemini:", (error as Error)?.message);
     throw toFriendlyError(error);
   }
 
@@ -117,6 +193,7 @@ export async function analyzeJobWithGemini(jobText: string): Promise<JobAnalysis
   try {
     parsed = JSON.parse(cleaned);
   } catch {
+    console.error("JSON inválido recebido do Gemini:", cleaned.slice(0, 300));
     throw new Error("A IA retornou um formato inválido. Tente novamente.");
   }
 
